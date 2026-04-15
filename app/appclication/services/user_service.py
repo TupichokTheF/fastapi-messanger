@@ -1,5 +1,5 @@
-from app.repositories.user_repository import UserRepositoryDep
-from app.repositories.token_repository import TokenRepositoryDep
+from app.infrastructure.adapters.repositories import UserRepositoryDep
+from app.infrastructure.adapters.repositories.token_repository import TokenRepositoryDep
 from app.schemas.user_schema import UserSignUp, UserSignIn
 from app.utils.security import verify_password
 from app.core.settings import settings

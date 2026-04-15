@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, HTTPException, status
 
-from app.services.user_service import UserServiceDep
+from app.appclication.services.user_service import UserServiceDep
 from app.schemas.user_schema import UserSignUp, UserSignIn
 from app.schemas.token_schemas import AccessToken
 
