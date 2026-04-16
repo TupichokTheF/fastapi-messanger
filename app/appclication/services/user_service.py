@@ -1,7 +1,6 @@
-from app.infrastructure.adapters.repositories import UserRepositoryDep
+from app.infrastructure.adapters.repositories.user_repository import UserRepositoryDep
 from app.infrastructure.adapters.repositories.token_repository import TokenRepositoryDep
-from app.schemas.user_schema import UserSignUp, UserSignIn
-from app.utils.security import verify_password
+from app.core.schemas.user_schema import UserSignUp, UserSignIn
 from app.core.settings import settings
 
 from fastapi import Depends
@@ -23,7 +22,7 @@ class UserService:
         user = await self._user_repo.get_user_by_username(user_.username)
         if not user:
             return False
-        if not verify_password(user_.password, user.password):
+        if not user.verify_password(user_.password):
             return False
         return user
 

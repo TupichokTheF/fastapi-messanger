@@ -1,10 +1,11 @@
 from abc import ABC
 from dataclasses import dataclass
+from typing import Optional
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class BaseEntity(ABC):
-    id: int
+    id: Optional[int] = None
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):

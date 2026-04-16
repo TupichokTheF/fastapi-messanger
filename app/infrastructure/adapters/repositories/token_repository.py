@@ -1,4 +1,4 @@
-from app.core.redis import RedisDep
+from app.infrastructure.database.redis.conn import RedisDep
 from fastapi import Depends
 
 from typing import Annotated
