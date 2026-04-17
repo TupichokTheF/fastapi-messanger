@@ -8,9 +8,21 @@ from bcrypt import checkpw
 
 @dataclass(eq=False, kw_only=True)
 class User(BaseEntity):
-    email: UserEmail
-    username: UserUsername
-    password: UserPassword
+    _email: UserEmail
+    _username: UserUsername
+    _password: UserPassword
 
     def verify_password(self, users_password: str):
-        return checkpw(users_password.encode("utf-8"), self.password.value.encode("utf-8"))
+        return checkpw(users_password.encode("utf-8"), self.password.encode("utf-8"))
+
+    @property
+    def username(self):
+        return self._username.value
+
+    @property
+    def email(self):
+        return self._email.value
+
+    @property
+    def password(self):
+        return self._password.value

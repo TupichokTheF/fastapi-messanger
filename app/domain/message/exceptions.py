@@ -1,4 +1,4 @@
 from app.domain import DomainError
 
-class ValidationError(DomainError):
+class EmptyMessage(DomainError):
     pass
