@@ -3,7 +3,7 @@ from app.domain.message.exceptions import EmptyMessage
 
 from dataclasses import dataclass
 
-@dataclass(frozen=True, kw_only=True, eq=False)
+@dataclass(frozen=True)
 class MessageText(BaseValueObject):
     value: str
 

@@ -7,9 +7,17 @@ from datetime import datetime
 
 @dataclass(kw_only=True, eq=False)
 class Message(BaseEntity):
-    spender: User
-    text: MessageText
+    _spender: User
+    _text: MessageText
     created_at: datetime = datetime.now()
+
+    @property
+    def text(self):
+        return self._text.value
+
+    @staticmethod
+    def create(spender: User, text: MessageText):
+        return Message(_spender= spender, _text=text)
 
 
 @dataclass(kw_only=True, eq=True)

@@ -15,9 +15,9 @@ class UserRepository:
         self._session = session
 
     async def create_user(self, user_data: UserSignUp) -> int:
-        user = User(username=UserUsername(user_data.username),
-                    email=UserEmail(user_data.email),
-                    password=UserPassword.create(user_data.password))
+        user = User.create(UserUsername(user_data.username),
+                           UserEmail(user_data.email),
+                           UserPassword.create(user_data.password))
         self._session.add(user)
         await self._session.commit()
         await self._session.refresh(user)

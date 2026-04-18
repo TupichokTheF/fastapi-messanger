@@ -1,7 +1,8 @@
-from sqlalchemy import Table, Column, Integer, String, MetaData
-from sqlalchemy.orm import registry, composite
+from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime
+from sqlalchemy.orm import registry, composite, relationship
 
 from app.domain.user.entities import User
+from app.domain.message.entities import Message
 from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
 
 mapper_registry = registry()
@@ -16,18 +17,36 @@ user_table = Table(
     Column("email", String(255), unique=True),
 )
 
-def init_tables():
-    if User not in mapper_registry.mappers:
-        mapper_registry.map_imperatively(
-            User,
-            user_table,
-            properties={
-                "_username_col": user_table.c.username,
-                "_email_col": user_table.c.email,
-                "_password_col": user_table.c.password,
+message_table = Table(
+    "messages",
+    metadata,
+    Column('id', Integer, primary_key=True),
+    Column("spender", ForeignKey("users.id"), nullable=False),
+    Column("text", String, nullable=False),
+    Column("created_at", DateTime, nullable=False)
+)
 
-                "username": composite(UserUsername, "_username_col"),
-                "email": composite(UserEmail, "_email_col"),
-                "password": composite(UserPassword, "_password_col"),
-            }
-        )
+def init_tables():
+    mapper_registry.map_imperatively(
+        User,
+        user_table,
+        properties={
+            "_col_username": user_table.c.username,
+            "_col_email": user_table.c.email,
+            "_col_password": user_table.c.password,
+
+            "_username": composite(UserUsername, "_col_username"),
+            "_email": composite(UserEmail, "_col_email"),
+            "_password": composite(UserPassword, "_col_password"),
+        }
+    )
+
+    mapper_registry.map_imperatively(
+        Message,
+        message_table,
+        properties={
+            "col_text": message_table.c.text,
+            "_spender": relationship(User, backref="messages", lazy="joined"),
+            "created_at": message_table.c.created_at
+        }
+    )
