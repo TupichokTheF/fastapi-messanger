@@ -1,8 +1,9 @@
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime
 from sqlalchemy.orm import registry, composite, relationship
 
-from app.domain.user.entities import User
+from app.domain.user.entities import User, Contact
 from app.domain.message.entities import Message
+from app.domain.message.value_objects import MessageText
 from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
 
 mapper_registry = registry()
@@ -21,9 +22,16 @@ message_table = Table(
     "messages",
     metadata,
     Column('id', Integer, primary_key=True),
-    Column("spender", ForeignKey("users.id"), nullable=False),
+    Column("spender_id", ForeignKey("users.id"), nullable=False),
     Column("text", String, nullable=False),
     Column("created_at", DateTime, nullable=False)
+)
+
+contact_table = Table(
+    "contacts",
+    metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True, nullable = False),
+    Column("contact_id", Integer, ForeignKey("users.id"), primary_key=True, nullable = False)
 )
 
 def init_tables():
@@ -47,6 +55,26 @@ def init_tables():
         properties={
             "col_text": message_table.c.text,
             "_spender": relationship(User, backref="messages", lazy="joined"),
-            "created_at": message_table.c.created_at
+            "created_at": message_table.c.created_at,
+            "_text": composite(MessageText, "col_text"),
         }
+    )
+
+    mapper_registry.map_imperatively(
+        Contact,
+        contact_table,
+        properties={
+            "_user": relationship(
+                User,
+                foreign_keys=[contact_table.c.user_id],
+                backref="contacts",
+                lazy="joined",
+            ),
+            "_contact": relationship(
+                User,
+                foreign_keys=[contact_table.c.contact_id],
+                backref="contact_of",
+                lazy="joined",
+            ),
+        },
     )

@@ -9,3 +9,4 @@ class RefreshToken(TokenBase):
 
 class AccessToken(TokenBase):
     pass
+

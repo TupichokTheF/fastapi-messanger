@@ -32,3 +32,21 @@ class User(BaseEntity):
         return User(_username=username,
                     _email=email,
                     _password=password)
+
+
+@dataclass(kw_only=True)
+class Contact:
+    _user: User
+    _contact: User
+
+    @property
+    def user(self):
+        return self._user
+
+    @property
+    def contact(self):
+        return self._contact
+
+    @staticmethod
+    def create(user: User, contact: User):
+        return Contact(_user=user, _contact=contact)
