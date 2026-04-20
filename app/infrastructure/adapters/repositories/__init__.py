@@ -1,2 +1,2 @@
-from app.infrastructure.adapters.repositories.user_repository import UserRepositoryDep
-from app.infrastructure.adapters.repositories.token_repository import TokenRepositoryDep
+from app.infrastructure.adapters.repositories.user_repository import UserRepositoryDep, UserRepository
+from app.infrastructure.adapters.repositories.token_repository import TokenRepositoryDep, TokenRepository

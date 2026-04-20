@@ -56,14 +56,6 @@ const messagesEl = ref(null)
 const token = localStorage.getItem('token')
 
 let ws = null
-let wsAuth = null
-
-function connectAuthWS() {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws'
-  wsAuth = new WebSocket(`${proto}://${location.host}/api/v1/ws/auth?token=${token}`)
-  wsAuth.onerror = () => logout()
-  wsAuth.onclose = (e) => { if (!e.wasClean) logout() }
-}
 
 const activeChatData = computed(() =>
   chats.value.find((c) => c.id === activeChat.value) || null
@@ -166,12 +158,10 @@ async function fetchContacts() {
 }
 
 onMounted(() => {
-  connectAuthWS()
   fetchContacts()
 })
 onUnmounted(() => {
   if (ws) ws.close()
-  if (wsAuth) wsAuth.close()
 })
 </script>
 

@@ -1,5 +1,6 @@
 from app.infrastructure.adapters.repositories.user_repository import UserRepositoryDep
 from app.infrastructure.adapters.repositories.token_repository import TokenRepositoryDep
+from app.appclication.services.exceptions import NotFoundError, WrongPasswordError
 from app.core.schemas.user_schema import UserSignUp, UserSignIn
 from app.domain.user import User, Contact
 from app.domain.user.value_objects import UserUsername
@@ -23,10 +24,17 @@ class UserService:
     async def authenticate_user(self, user_: UserSignIn):
         user = await self._user_repo.get_user_by_username(user_.username)
         if not user:
-            return False
+            raise NotFoundError("Incorrect username")
         if not user.verify_password(user_.password):
-            return False
+            raise WrongPasswordError("Incorrect password")
         return user
+
+    async def refresh_access_token(self, refresh_token: str):
+        username = await self._token_repo.get_username_by_refresh_token(refresh_token)
+        if not username:
+            raise NotFoundError("Incorrect refresh_token")
+        access_token = await self.generate_token({"sub": username})
+        return access_token
 
     async def generate_refresh_token(self, data: dict):
         encoded_jwt = await self.generate_token(data, settings.REFRESH_TOKEN_EXPIRES)
@@ -42,8 +50,9 @@ class UserService:
 
     async def add_to_contact(self, user: User, contact_username: str) -> bool:
         contact_user = await self._user_repo.get_user_by_username(contact_username)
+        if not contact_user:
+            raise NotFoundError("Incorrect contact username")
         contact = Contact.create(user, contact_user)
-        print(contact)
         await self._user_repo.add_contact(contact)
         return True
 
