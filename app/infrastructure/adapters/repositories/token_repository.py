@@ -14,6 +14,8 @@ class TokenRepository:
 
     async def get_username_by_refresh_token(self, refresh_token: str):
         username = self._redis.get(name=f"refresh_token:{refresh_token}")
+        if not username:
+            return None
         return username.decode()
 
     async def delete_refresh_token(self, refresh_token: str):

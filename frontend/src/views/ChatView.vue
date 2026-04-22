@@ -61,48 +61,40 @@ const activeChatData = computed(() =>
   chats.value.find((c) => c.id === activeChat.value) || null
 )
 
-async function fetchMessages(chatId) {
-  try {
-    const res = await fetch(`/api/chats/${chatId}/messages`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    messages.value = await res.json()
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+  ws = new WebSocket(`${proto}://${location.host}/api/v1/ws/send_message?access_token=${token}`)
+  ws.onmessage = (e) => {
+    let msg
+    try {
+      msg = JSON.parse(e.data)
+      if (typeof msg !== 'object' || !msg.content) msg = { content: e.data }
+    } catch {
+      msg = { content: e.data }
+    }
+    messages.value.push(msg)
     scrollBottom()
-  } catch {
-    // handled silently
   }
+  ws.onclose = () => {}
+  ws.onerror = () => {}
 }
 
 function openContact(username) {
-  if (ws) { ws.close(); ws = null }
   activeChat.value = null
   activeContact.value = username
   messages.value = []
 }
 
 function openChat(chatId) {
-  if (ws) { ws.close(); ws = null }
   activeContact.value = null
   activeChat.value = chatId
-  fetchMessages(chatId)
-  connectWS(chatId)
-}
-
-function connectWS(chatId) {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws'
-  ws = new WebSocket(`${proto}://${location.host}/api/ws/${chatId}?token=${token}`)
-  ws.onmessage = (e) => {
-    const msg = JSON.parse(e.data)
-    messages.value.push(msg)
-    scrollBottom()
-  }
-  ws.onclose = () => {}
+  messages.value = []
 }
 
 function sendMessage() {
   const text = newMessage.value.trim()
   if (!text || !ws || ws.readyState !== WebSocket.OPEN) return
-  ws.send(JSON.stringify({ content: text }))
+  ws.send(text)
   newMessage.value = ''
 }
 
@@ -158,6 +150,7 @@ async function fetchContacts() {
 }
 
 onMounted(() => {
+  connectWS()
   fetchContacts()
 })
 onUnmounted(() => {

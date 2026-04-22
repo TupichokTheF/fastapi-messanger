@@ -30,12 +30,25 @@ async def get_user_by_token(token: str, user_rep: UserRepository) -> User:
         raise credentials_exception
     return user
 
+async def check_if_user_logout(token_repo: TokenRepositoryDep, refresh_token: str = Cookie()):
+    if not await token_repo.get_username_by_refresh_token(refresh_token):
+        return False
+    return True
 
-async def get_current_user_ws(user_rep: UserRepositoryDep, access_token: str = Query()) -> User:
+
+async def get_current_user_ws(user_rep: UserRepositoryDep,
+                              access_token: str = Query(),
+                              does_user_logout: bool = Depends(check_if_user_logout)) -> User | None:
+    if not does_user_logout:
+        return None
     return await get_user_by_token(access_token, user_rep)
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], user_rep: UserRepositoryDep) -> User:
-    return await get_user_by_token(token, user_rep)
+async def get_current_user(access_token: Annotated[str, Depends(oauth2_scheme)],
+                           user_rep: UserRepositoryDep,
+                           does_user_logout: bool = Depends(check_if_user_logout)) -> User | None:
+    if not does_user_logout:
+        return None
+    return await get_user_by_token(access_token, user_rep)
 
 
 AuthorizationDep = Annotated[User, Depends(get_current_user)]
