@@ -13,8 +13,9 @@ async def add_user_to_contact(user: AuthorizationDep, user_service: UserServiceD
     await user_service.add_to_contact(user, contact_username)
     return AddedToContactResponse(succeed=True, detail="User added to contact")
 
-@user_router.get("/get_contacts")
+@user_router.get("/get_contacts", response_model=UserContactsResponse)
 async def get_contacts(user: AuthorizationDep, user_service: UserServiceDep):
     contacts = await user_service.get_contacts(user)
     return UserContactsResponse(succeed=True, detail="Spend list of user contacts", contacts=contacts)
+
 
