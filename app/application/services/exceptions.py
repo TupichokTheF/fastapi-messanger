@@ -7,3 +7,6 @@ class NotFoundError(ApplicationError):
 
 class WrongPasswordError(ApplicationError):
     pass
+
+class WrongTokenError(ApplicationError):
+    pass

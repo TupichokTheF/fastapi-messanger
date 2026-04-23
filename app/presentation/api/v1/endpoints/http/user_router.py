@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body
-from app.core.auth_dep import AuthorizationDep
-from app.appclication.services.user_service import UserServiceDep
-from app.presentation.api.v1.responses import AddedToContactResponse, UserContactsResponse
+from app.presentation.api.v1.dependencies.auth_dep import AuthorizationDep
+from app.presentation.api.v1.dependencies import UserServiceDep
+from app.presentation.api.v1.schemas.responses import AddedToContactResponse, UserContactsResponse
 
 user_router = APIRouter(
     prefix="/user",

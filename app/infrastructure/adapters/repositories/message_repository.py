@@ -1,12 +1,13 @@
-from app.infrastructure.database.postgresql.db import SessionDep
-from app.core.schemas.message_schema import MessageBase
+from app.presentation.api.v1.schemas.message_schema import MessageBase
 from app.domain.message.entities import Message
 from app.domain.message.value_objects import MessageText
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class MessageRepo:
 
-    def __init__(self, session: SessionDep):
+    def __init__(self, session: AsyncSession):
         self._session = session
 
     async def add_message(self, raw_message: MessageBase):

@@ -26,5 +26,3 @@ class Database:
         await self._engine.dispose()
 
 database = Database()
-
-SessionDep = Annotated[AsyncSession, Depends(database.get_session)]

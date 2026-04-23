@@ -28,7 +28,10 @@ class User(BaseEntity):
         return self._password.value
 
     @staticmethod
-    def create(username: UserUsername, email: UserEmail, password: UserPassword):
+    def create(username: str, email: str, password: str):
+        username = UserUsername(username)
+        email = UserEmail(email)
+        password = UserPassword.create(password)
         return User(_username=username,
                     _email=email,
                     _password=password)

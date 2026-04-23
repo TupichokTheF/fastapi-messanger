@@ -1,7 +1,7 @@
 from fastapi import APIRouter, WebSocket
 
 from app.infrastructure.websockets.con_manager import ConManagerDep
-from app.core.auth_dep import AuthorizationWsDep
+from app.presentation.api.v1.dependencies.auth_dep import AuthorizationWsDep
 
 messages_router = APIRouter(prefix="/ws")
 
