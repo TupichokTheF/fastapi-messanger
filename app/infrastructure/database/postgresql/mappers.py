@@ -2,7 +2,7 @@ from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, Dat
 from sqlalchemy.orm import registry, composite, relationship
 
 from app.domain.user.entities import User, Contact
-from app.domain.message.entities import Message
+from app.domain.message.entities import Message, MessageReceiver
 from app.domain.message.value_objects import MessageText
 from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
 
@@ -25,6 +25,14 @@ message_table = Table(
     Column("spender_id", ForeignKey("users.id"), nullable=False),
     Column("text", String, nullable=False),
     Column("created_at", DateTime, nullable=False)
+)
+
+message_receiver = Table(
+    "message_receiver",
+    metadata,
+    Column("message_id", Integer, ForeignKey("messages.id"), primary_key=True, nullable=False),
+    Column("receiver_id", Integer, ForeignKey("users.id"), primary_key=True, nullable=False),
+    Column("read_at", DateTime, nullable=True)
 )
 
 contact_table = Table(
@@ -55,7 +63,7 @@ def init_tables():
         properties={
             "col_text": message_table.c.text,
             "_spender": relationship(User, backref="messages", lazy="joined"),
-            "created_at": message_table.c.created_at,
+            "_created_at": message_table.c.created_at,
             "_text": composite(MessageText, "col_text"),
         }
     )
@@ -77,4 +85,24 @@ def init_tables():
                 lazy="joined",
             ),
         },
+    )
+
+    mapper_registry.map_imperatively(
+        MessageReceiver,
+        message_receiver,
+        properties={
+            "_message": relationship(
+                Message,
+                foreign_keys=[message_receiver.c.message_id],
+                backref="message_receiver",
+                lazy="joined",
+            ),
+            "_receiver": relationship(
+                User,
+                foreign_keys=[message_receiver.c.receiver_id],
+                backref="message_receiver_",
+                lazy="joined",
+            ),
+            "_read_at": message_receiver.c.read_at
+        }
     )

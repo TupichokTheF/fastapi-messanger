@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { apiFetch } from '../utils/api'
 
 const router = useRouter()
 
@@ -31,12 +32,11 @@ async function submitAddUser() {
   }
   addUserLoading.value = true
   try {
-    const res = await fetch('/api/v1/user/add_contact', {
+    const res = await apiFetch('/api/v1/user/add_contact', {
       method: 'POST',
       headers: {
         'accept': 'application/json',
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ contact_username: addUsername.value.trim() }),
     })
@@ -55,23 +55,47 @@ async function submitAddUser() {
 const messagesEl = ref(null)
 const token = localStorage.getItem('token')
 
+function getUsernameFromToken(t) {
+  if (!t) return ''
+  try {
+    const payload = JSON.parse(atob(t.split('.')[1]))
+    return payload.sub || payload.username || ''
+  } catch {
+    return ''
+  }
+}
+const currentUser = getUsernameFromToken(token)
+
 let ws = null
 
 const activeChatData = computed(() =>
   chats.value.find((c) => c.id === activeChat.value) || null
 )
 
+function disconnectWS() {
+  if (!ws) return
+  ws.onmessage = null
+  ws.onclose = null
+  ws.onerror = null
+  if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+    ws.close()
+  }
+  ws = null
+}
+
 function connectWS() {
+  disconnectWS()
   const proto = location.protocol === 'https:' ? 'wss' : 'ws'
   ws = new WebSocket(`${proto}://${location.host}/api/v1/ws/send_message?access_token=${token}`)
   ws.onmessage = (e) => {
     let msg
     try {
       msg = JSON.parse(e.data)
-      if (typeof msg !== 'object' || !msg.content) msg = { content: e.data }
     } catch {
-      msg = { content: e.data }
+      return
     }
+    if (typeof msg !== 'object' || msg === null) return
+    if (!activeContact.value || msg.spender !== activeContact.value) return
     messages.value.push(msg)
     scrollBottom()
   }
@@ -83,18 +107,32 @@ function openContact(username) {
   activeChat.value = null
   activeContact.value = username
   messages.value = []
+  connectWS()
 }
 
 function openChat(chatId) {
   activeContact.value = null
   activeChat.value = chatId
   messages.value = []
+  connectWS()
 }
 
 function sendMessage() {
   const text = newMessage.value.trim()
-  if (!text || !ws || ws.readyState !== WebSocket.OPEN) return
-  ws.send(text)
+  if (!text || !activeContact.value || !ws || ws.readyState !== WebSocket.OPEN) return
+  const created_at = new Date().toISOString()
+  ws.send(JSON.stringify({
+    text,
+    receiver: activeContact.value,
+    created_at,
+  }))
+  messages.value.push({
+    text,
+    spender: currentUser,
+    receiver: activeContact.value,
+    created_at,
+  })
+  scrollBottom()
   newMessage.value = ''
 }
 
@@ -102,11 +140,10 @@ async function createChat() {
   const name = newChatName.value.trim()
   if (!name) return
   try {
-    const res = await fetch('/api/chats', {
+    const res = await apiFetch('/api/chats', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ name }),
     })
@@ -128,17 +165,16 @@ function scrollBottom() {
 }
 
 function logout() {
-  if (ws) ws.close()
+  disconnectWS()
   localStorage.removeItem('token')
   router.push('/login')
 }
 
 async function fetchContacts() {
   try {
-    const res = await fetch('/api/v1/user/get_contacts', {
+    const res = await apiFetch('/api/v1/user/get_contacts', {
       headers: {
         'accept': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
     })
     if (!res.ok) return
@@ -149,12 +185,18 @@ async function fetchContacts() {
   }
 }
 
+function formatTime(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d)) return ''
+  return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+}
+
 onMounted(() => {
-  connectWS()
   fetchContacts()
 })
 onUnmounted(() => {
-  if (ws) ws.close()
+  disconnectWS()
 })
 </script>
 
@@ -162,14 +204,21 @@ onUnmounted(() => {
   <div class="layout">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <span class="logo">Chat</span>
-        <button class="icon-btn" title="Новый чат" @click="showNewChat = !showNewChat">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
+      <header class="sidebar-header">
+        <span class="brand">Chat</span>
+        <div class="header-actions">
+          <button class="icon-btn" title="Добавить пользователя" @click="openAddUser">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Новый чат" @click="showNewChat = !showNewChat">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M4 16l2-5 8-8 3 3-8 8-5 2zM11 5l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </header>
 
       <div v-if="showNewChat" class="new-chat-form">
         <input
@@ -183,8 +232,6 @@ onUnmounted(() => {
       </div>
 
       <nav class="chat-list">
-        <p class="list-label">Контакты</p>
-
         <button
           v-for="username in contacts"
           :key="username"
@@ -193,27 +240,28 @@ onUnmounted(() => {
           @click="openContact(username)"
         >
           <span class="chat-avatar">{{ username[0].toUpperCase() }}</span>
-          <span class="chat-name">{{ username }}</span>
+          <span class="chat-meta">
+            <span class="chat-name">{{ username }}</span>
+            <span class="chat-sub">@{{ username }}</span>
+          </span>
         </button>
 
         <p v-if="contacts.length === 0" class="empty-hint">
-          Нет контактов
+          Список контактов пуст
         </p>
       </nav>
 
-      <!-- Add user FAB -->
-      <button class="fab" title="Добавить пользователя" @click="openAddUser">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-      </button>
-
-      <button class="logout-btn" @click="logout">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-          <path d="M5 2H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10 10l3-3-3-3M14 7.5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Выйти
-      </button>
+      <footer class="sidebar-footer">
+        <div class="me">
+          <span class="me-avatar">{{ (currentUser[0] || '?').toUpperCase() }}</span>
+          <span class="me-name">{{ currentUser || 'Гость' }}</span>
+        </div>
+        <button class="logout-btn" @click="logout" title="Выйти">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </footer>
     </aside>
 
     <!-- Add user modal -->
@@ -221,32 +269,28 @@ onUnmounted(() => {
       <div v-if="showAddUser" class="modal-overlay" @click.self="showAddUser = false">
         <div class="modal">
           <div class="modal-header">
-            <span class="modal-title">Добавить пользователя</span>
-            <button class="modal-close" @click="showAddUser = false">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <span class="modal-title">Новый контакт</span>
+            <button class="modal-close" @click="showAddUser = false" aria-label="Закрыть">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
               </svg>
             </button>
           </div>
 
           <form @submit.prevent="submitAddUser" novalidate>
-            <div class="modal-field">
-              <label for="addUsername">Имя пользователя</label>
-              <input
-                id="addUsername"
-                v-model="addUsername"
-                type="text"
-                placeholder="your_username"
-                autocomplete="off"
-                autofocus
-              />
-            </div>
-
-            <p v-if="addUserError" class="modal-error">{{ addUserError }}</p>
+            <input
+              v-model="addUsername"
+              type="text"
+              placeholder="Имя пользователя"
+              autocomplete="off"
+              autofocus
+            />
 
             <button type="submit" class="modal-btn" :disabled="addUserLoading">
-              {{ addUserLoading ? 'Добавление...' : 'Добавить' }}
+              {{ addUserLoading ? 'Добавление…' : 'Добавить' }}
             </button>
+
+            <p v-if="addUserError" class="modal-error">{{ addUserError }}</p>
           </form>
         </div>
       </div>
@@ -257,7 +301,10 @@ onUnmounted(() => {
       <template v-if="activeContact">
         <header class="chat-header">
           <div class="chat-header-avatar">{{ activeContact[0].toUpperCase() }}</div>
-          <span class="chat-title">{{ activeContact }}</span>
+          <div class="chat-header-meta">
+            <span class="chat-title">{{ activeContact }}</span>
+            <span class="chat-status">в сети</span>
+          </div>
         </header>
 
         <div class="messages" ref="messagesEl">
@@ -265,11 +312,10 @@ onUnmounted(() => {
             v-for="(msg, i) in messages"
             :key="i"
             class="message"
-            :class="{ own: msg.is_own }"
+            :class="{ own: msg.spender === currentUser }"
           >
-            <span v-if="!msg.is_own" class="msg-author">{{ msg.author }}</span>
-            <div class="msg-bubble">{{ msg.content }}</div>
-            <span class="msg-time">{{ msg.created_at }}</span>
+            <div class="msg-bubble">{{ msg.text }}</div>
+            <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
           </div>
         </div>
 
@@ -277,12 +323,12 @@ onUnmounted(() => {
           <input
             v-model="newMessage"
             type="text"
-            placeholder="Напишите сообщение..."
+            placeholder="Сообщение"
             autocomplete="off"
           />
-          <button type="submit">
+          <button type="submit" class="send-btn" :disabled="!newMessage.trim()">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 15V3M3 9l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 9l14-7-7 14-2-6-5-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
             </svg>
           </button>
         </form>
@@ -291,7 +337,10 @@ onUnmounted(() => {
       <template v-else-if="activeChat">
         <header class="chat-header">
           <div class="chat-header-avatar">{{ activeChatData?.name[0].toUpperCase() }}</div>
-          <span class="chat-title">{{ activeChatData?.name }}</span>
+          <div class="chat-header-meta">
+            <span class="chat-title">{{ activeChatData?.name }}</span>
+            <span class="chat-status">групповой чат</span>
+          </div>
         </header>
 
         <div class="messages" ref="messagesEl">
@@ -299,11 +348,11 @@ onUnmounted(() => {
             v-for="(msg, i) in messages"
             :key="i"
             class="message"
-            :class="{ own: msg.is_own }"
+            :class="{ own: msg.spender === currentUser }"
           >
-            <span v-if="!msg.is_own" class="msg-author">{{ msg.author }}</span>
-            <div class="msg-bubble">{{ msg.content }}</div>
-            <span class="msg-time">{{ msg.created_at }}</span>
+            <span v-if="msg.spender !== currentUser" class="msg-author">{{ msg.spender }}</span>
+            <div class="msg-bubble">{{ msg.text }}</div>
+            <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
           </div>
         </div>
 
@@ -311,12 +360,12 @@ onUnmounted(() => {
           <input
             v-model="newMessage"
             type="text"
-            placeholder="Напишите сообщение..."
+            placeholder="Сообщение"
             autocomplete="off"
           />
-          <button type="submit">
+          <button type="submit" class="send-btn" :disabled="!newMessage.trim()">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 15V3M3 9l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 9l14-7-7 14-2-6-5-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
             </svg>
           </button>
         </form>
@@ -324,8 +373,8 @@ onUnmounted(() => {
 
       <div v-else class="placeholder">
         <div class="placeholder-inner">
-          <div class="placeholder-icon">💬</div>
-          <p>Выберите чат или создайте новый</p>
+          <div class="placeholder-mark">Chat</div>
+          <p>Выберите контакт, чтобы начать переписку</p>
         </div>
       </div>
     </main>
@@ -336,44 +385,49 @@ onUnmounted(() => {
 .layout {
   display: flex;
   height: 100vh;
-  background: #f0f0f0;
-  color: #111;
-  font-family: 'Inter', system-ui, sans-serif;
+  background: #fff;
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
 }
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 340px;
+  width: 320px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-right: 1px solid #eee;
-  position: relative;
+  border-right: 1px solid #dbdbdb;
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 18px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 20px 18px;
+  border-bottom: 1px solid #efefef;
 }
 
-.logo {
-  font-size: 18px;
+.brand {
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.4px;
-  color: #111;
+  letter-spacing: -0.6px;
+  color: #000;
+}
+
+.header-actions {
+  display: flex;
+  gap: 4px;
 }
 
 .icon-btn {
-  background: #f5f5f5;
+  background: none;
   border: none;
-  color: #111;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  color: #000;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -381,140 +435,184 @@ onUnmounted(() => {
   transition: background 0.15s;
 }
 
-.icon-btn:hover { background: #ebebeb; }
+.icon-btn:hover { background: #f0f0f0; }
+.icon-btn:active { background: #e4e4e4; }
 
 .new-chat-form {
-  padding: 12px 14px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 14px;
+  border-bottom: 1px solid #efefef;
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .new-chat-form input {
   flex: 1;
-  background: #f7f7f7;
-  border: 1.5px solid #ebebeb;
-  color: #111;
+  background: #fafafa;
+  border: 1px solid #dbdbdb;
+  color: #000;
   font-size: 13px;
   padding: 8px 12px;
-  border-radius: 10px;
+  border-radius: 999px;
   outline: none;
   min-width: 0;
   transition: border-color 0.15s;
+  font-family: inherit;
 }
 
-.new-chat-form input:focus { border-color: #111; }
+.new-chat-form input:focus { border-color: #a8a8a8; }
+.new-chat-form input::placeholder { color: #8e8e8e; }
 
 .btn-create {
-  background: #111;
+  background: #000;
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   padding: 0 14px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s;
+  transition: opacity 0.15s;
+  font-family: inherit;
 }
 
-.btn-create:hover { background: #333; }
+.btn-create:hover { opacity: 0.85; }
 
 .chat-list {
   flex: 1;
   overflow-y: auto;
-  padding: 10px 10px;
+  padding: 6px 8px;
 }
 
 .chat-list::-webkit-scrollbar { width: 4px; }
 .chat-list::-webkit-scrollbar-track { background: transparent; }
-.chat-list::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 4px; }
+.chat-list::-webkit-scrollbar-thumb { background: #dbdbdb; border-radius: 4px; }
 
 .chat-item {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 10px 10px;
   background: none;
   border: none;
-  color: #666;
   cursor: pointer;
   text-align: left;
-  border-radius: 14px;
+  border-radius: 10px;
   transition: background 0.12s;
+  font-family: inherit;
 }
 
-.chat-item:hover { background: #f5f5f5; color: #111; }
-.chat-item.active { background: #f0f0f0; color: #111; }
+.chat-item:hover { background: #f7f7f7; }
+.chat-item.active { background: #efefef; }
 
 .chat-avatar {
-  width: 46px;
-  height: 46px;
-  background: #111;
+  width: 44px;
+  height: 44px;
+  background: #000;
   color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   flex-shrink: 0;
 }
 
+.chat-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
 .chat-name {
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: #000;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #111;
 }
 
-.list-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #bbb;
-  padding: 8px 10px 4px;
+.chat-sub {
+  font-size: 12px;
+  color: #8e8e8e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .empty-hint {
   padding: 28px 10px;
   font-size: 13px;
-  color: #bbb;
+  color: #8e8e8e;
   text-align: center;
 }
 
-.fab {
-  position: absolute;
-  bottom: 64px;
-  left: 18px;
-  width: 42px;
-  height: 42px;
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid #efefef;
+  gap: 8px;
+}
+
+.me {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.me-avatar {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #111;
+  background: #000;
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.me-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-btn {
+  background: none;
   border: none;
+  color: #8e8e8e;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  transition: background 0.15s, transform 0.1s;
-  z-index: 10;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
-.fab:hover { background: #333; }
-.fab:active { transform: scale(0.94); }
+.logout-btn:hover { background: #f0f0f0; color: #000; }
 
+/* ── Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -523,121 +621,86 @@ onUnmounted(() => {
 
 .modal {
   background: #fff;
-  border-radius: 20px;
-  padding: 32px 32px 28px;
+  border: 1px solid #dbdbdb;
+  border-radius: 2px;
+  padding: 28px 28px 24px;
   width: 100%;
   max-width: 360px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.14);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .modal-title {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
-  color: #111;
-  letter-spacing: -0.3px;
+  color: #000;
+  letter-spacing: -0.2px;
 }
 
 .modal-close {
-  background: #f5f5f5;
+  background: none;
   border: none;
-  color: #555;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  color: #000;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s;
 }
 
-.modal-close:hover { background: #ebebeb; color: #111; }
+.modal-close:hover { background: #f0f0f0; }
 
-.modal-field {
-  margin-bottom: 16px;
-}
-
-.modal-field label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 6px;
-}
-
-.modal-field input {
+.modal input {
   width: 100%;
-  background: #f7f7f7;
-  border: 1.5px solid #ebebeb;
-  color: #111;
-  font-size: 14px;
-  padding: 11px 14px;
-  border-radius: 12px;
+  background: #fafafa;
+  border: 1px solid #dbdbdb;
+  color: #000;
+  font-size: 13px;
+  padding: 11px 12px;
+  border-radius: 3px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s;
   box-sizing: border-box;
+  font-family: inherit;
+  margin-bottom: 12px;
 }
 
-.modal-field input:focus {
-  border-color: #111;
-  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
-}
-
-.modal-field input::placeholder { color: #bbb; }
+.modal input:focus { border-color: #a8a8a8; }
+.modal input::placeholder { color: #8e8e8e; }
 
 .modal-error {
   font-size: 13px;
-  color: #e53e3e;
-  margin-bottom: 12px;
-  padding: 9px 13px;
-  background: #fff5f5;
-  border-radius: 10px;
-  border: 1px solid #fed7d7;
+  color: #000;
+  text-align: center;
+  margin: 12px 0 0;
+  line-height: 1.4;
 }
 
 .modal-btn {
   width: 100%;
-  padding: 12px;
-  background: #111;
+  padding: 9px;
+  background: #000;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
   border: none;
-  border-radius: 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-  margin-top: 4px;
+  transition: opacity 0.15s;
+  font-family: inherit;
 }
 
-.modal-btn:hover:not(:disabled) { background: #333; }
-.modal-btn:active:not(:disabled) { transform: scale(0.99); }
-.modal-btn:disabled { opacity: 0.45; cursor: default; }
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  border-top: 1px solid #f0f0f0;
-  color: #aaa;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 16px 18px;
-  cursor: pointer;
-  transition: color 0.15s;
-  width: 100%;
-  text-align: left;
-}
-
-.logout-btn:hover { color: #111; }
+.modal-btn:hover:not(:disabled) { opacity: 0.85; }
+.modal-btn:disabled { opacity: 0.35; cursor: default; }
 
 /* ── Main ── */
 .main {
@@ -645,25 +708,25 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: #f5f5f5;
+  background: #fff;
 }
 
 .chat-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 24px;
+  padding: 14px 24px;
   background: #fff;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #efefef;
   flex-shrink: 0;
 }
 
 .chat-header-avatar {
-  width: 36px;
-  height: 36px;
-  background: #111;
+  width: 38px;
+  height: 38px;
+  background: #000;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -672,31 +735,43 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
+.chat-header-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .chat-title {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.2px;
-  color: #111;
+  color: #000;
+}
+
+.chat-status {
+  font-size: 12px;
+  color: #8e8e8e;
 }
 
 .messages {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 20px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  background: #fff;
 }
 
 .messages::-webkit-scrollbar { width: 4px; }
 .messages::-webkit-scrollbar-track { background: transparent; }
-.messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+.messages::-webkit-scrollbar-thumb { background: #dbdbdb; border-radius: 4px; }
 
 .message {
   display: flex;
   flex-direction: column;
-  max-width: 58%;
-  gap: 3px;
+  max-width: 62%;
+  gap: 2px;
   align-self: flex-start;
 }
 
@@ -708,98 +783,101 @@ onUnmounted(() => {
 .msg-author {
   font-size: 11px;
   font-weight: 600;
-  color: #999;
-  padding-left: 4px;
+  color: #8e8e8e;
+  padding: 0 10px 2px;
 }
 
 .msg-bubble {
-  background: #fff;
-  border: 1px solid #eee;
-  padding: 10px 14px;
-  border-radius: 16px;
+  background: #efefef;
+  padding: 8px 14px;
+  border-radius: 18px;
   border-bottom-left-radius: 4px;
   font-size: 14px;
-  line-height: 1.5;
-  color: #111;
+  line-height: 1.35;
+  color: #000;
   word-break: break-word;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .message.own .msg-bubble {
-  background: #111;
-  border-color: #111;
+  background: #000;
   color: #fff;
-  border-bottom-left-radius: 16px;
+  border-bottom-left-radius: 18px;
   border-bottom-right-radius: 4px;
 }
 
 .msg-time {
-  font-size: 11px;
-  color: #bbb;
-  padding: 0 4px;
+  font-size: 10px;
+  color: #8e8e8e;
+  padding: 0 10px;
+  margin-top: 1px;
 }
 
 .input-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 8px;
+  padding: 12px 18px;
   background: #fff;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #efefef;
   flex-shrink: 0;
 }
 
 .input-bar input {
   flex: 1;
-  background: #f5f5f5;
-  border: 1.5px solid #ebebeb;
-  color: #111;
+  background: #fafafa;
+  border: 1px solid #dbdbdb;
+  color: #000;
   font-size: 14px;
-  padding: 11px 16px;
-  border-radius: 14px;
+  padding: 10px 18px;
+  border-radius: 999px;
   outline: none;
   min-width: 0;
   transition: border-color 0.15s;
+  font-family: inherit;
 }
 
-.input-bar input:focus { border-color: #111; }
-.input-bar input::placeholder { color: #bbb; }
+.input-bar input:focus { border-color: #a8a8a8; }
+.input-bar input::placeholder { color: #8e8e8e; }
 
-.input-bar button {
-  background: #111;
+.send-btn {
+  background: #000;
   color: #fff;
   border: none;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  font-size: 18px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
   cursor: pointer;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: inherit;
 }
 
-.input-bar button:hover { background: #333; }
-.input-bar button:active { transform: scale(0.95); }
+.send-btn:hover:not(:disabled) { opacity: 0.85; }
+.send-btn:active:not(:disabled) { transform: scale(0.94); }
+.send-btn:disabled { opacity: 0.25; cursor: default; }
 
 .placeholder {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #fafafa;
 }
 
 .placeholder-inner {
   text-align: center;
-  color: #bbb;
+  color: #8e8e8e;
 }
 
-.placeholder-icon {
-  font-size: 40px;
-  margin-bottom: 12px;
-  filter: grayscale(1) opacity(0.5);
+.placeholder-mark {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  color: #000;
+  margin-bottom: 10px;
 }
 
 .placeholder-inner p {

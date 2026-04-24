@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel
 from app.domain.user.value_objects import UserUsername
 
@@ -13,3 +15,14 @@ class AddedToContactResponse(BaseResponse):
 
 class UserContactsResponse(BaseResponse):
     contacts: list[UserUsername]
+
+class ErrorResponse(BaseResponse):
+    pass
+
+class MessageSendResponse(BaseResponse):
+    created_at: datetime.datetime
+
+class MessageToSend(BaseModel):
+    text: str
+    spender: str
+    created_at: datetime.datetime

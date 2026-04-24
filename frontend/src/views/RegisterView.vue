@@ -49,56 +49,42 @@ async function submit() {
 <template>
   <div class="page">
     <div class="card">
-      <div class="logo">Chat</div>
-
-      <h1>Создать аккаунт</h1>
-      <p class="subtitle">Регистрация займёт несколько секунд</p>
+      <div class="brand">Chat</div>
+      <p class="tagline">Присоединяйтесь, чтобы начать переписку.</p>
 
       <form @submit.prevent="submit" novalidate>
-        <div class="field">
-          <label for="username">Имя пользователя</label>
-          <input
-            id="username"
-            v-model="username"
-            type="text"
-            placeholder="your_username"
-            autocomplete="username"
-          />
-        </div>
+        <input
+          v-model="username"
+          type="text"
+          placeholder="Имя пользователя"
+          autocomplete="username"
+        />
 
-        <div class="field">
-          <label for="password">Пароль</label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="Минимум 6 символов"
-            autocomplete="new-password"
-          />
-        </div>
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Пароль"
+          autocomplete="new-password"
+        />
 
-        <div class="field">
-          <label for="passwordConfirm">Повторите пароль</label>
-          <input
-            id="passwordConfirm"
-            v-model="passwordConfirm"
-            type="password"
-            placeholder="••••••••"
-            autocomplete="new-password"
-          />
-        </div>
-
-        <p v-if="error" class="error">{{ error }}</p>
+        <input
+          v-model="passwordConfirm"
+          type="password"
+          placeholder="Повторите пароль"
+          autocomplete="new-password"
+        />
 
         <button type="submit" class="btn" :disabled="loading">
-          {{ loading ? 'Регистрация...' : 'Зарегистрироваться' }}
+          {{ loading ? 'Регистрация…' : 'Зарегистрироваться' }}
         </button>
-      </form>
 
-      <p class="footer">
-        Уже есть аккаунт?
-        <RouterLink to="/login">Войти</RouterLink>
-      </p>
+        <p v-if="error" class="error">{{ error }}</p>
+      </form>
+    </div>
+
+    <div class="card card-sub">
+      Уже есть аккаунт?
+      <RouterLink to="/login">Войти</RouterLink>
     </div>
   </div>
 </template>
@@ -107,120 +93,104 @@ async function submit() {
 .page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  gap: 10px;
+  background: #fafafa;
   padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  color: #000;
 }
 
 .card {
   width: 100%;
-  max-width: 400px;
-  padding: 48px 40px;
+  max-width: 360px;
+  padding: 40px 32px 28px;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid #dbdbdb;
+  border-radius: 2px;
 }
 
-.logo {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  margin-bottom: 36px;
-  color: #111;
-}
-
-h1 {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  margin-bottom: 6px;
-  color: #111;
-}
-
-.subtitle {
+.card-sub {
+  padding: 20px;
+  text-align: center;
   font-size: 14px;
-  color: #999;
-  margin-bottom: 32px;
+  color: #262626;
 }
 
-.field {
-  margin-bottom: 16px;
-}
-
-label {
-  display: block;
-  font-size: 12px;
+.card-sub a {
+  color: #000;
   font-weight: 600;
-  color: #555;
-  margin-bottom: 6px;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.card-sub a:hover { text-decoration: underline; }
+
+.brand {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  text-align: center;
+  margin: 8px 0 12px;
+}
+
+.tagline {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #8e8e8e;
+  line-height: 1.4;
+  margin: 0 0 24px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 input {
   width: 100%;
-  background: #f7f7f7;
-  border: 1.5px solid #ebebeb;
-  color: #111;
-  font-size: 14px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-input:focus {
-  border-color: #111;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
-}
-
-input::placeholder {
-  color: #bbb;
-}
-
-.error {
+  background: #fafafa;
+  border: 1px solid #dbdbdb;
+  color: #000;
   font-size: 13px;
-  color: #e53e3e;
-  margin-bottom: 12px;
-  padding: 10px 14px;
-  background: #fff5f5;
-  border-radius: 10px;
-  border: 1px solid #fed7d7;
+  padding: 11px 10px;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  font-family: inherit;
 }
+
+input:focus { border-color: #a8a8a8; }
+input::placeholder { color: #8e8e8e; }
 
 .btn {
+  margin-top: 10px;
   width: 100%;
-  padding: 13px;
-  background: #111;
+  padding: 8px;
+  background: #000;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
   border: none;
-  border-radius: 12px;
+  border-radius: 6px;
   cursor: pointer;
-  letter-spacing: 0.02em;
-  margin-top: 8px;
-  transition: background 0.15s, transform 0.1s;
+  transition: opacity 0.15s;
+  font-family: inherit;
 }
 
-.btn:hover:not(:disabled) { background: #333; }
-.btn:active:not(:disabled) { transform: scale(0.99); }
-.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:hover:not(:disabled) { opacity: 0.85; }
+.btn:disabled { opacity: 0.35; cursor: default; }
 
-.footer {
-  margin-top: 24px;
+.error {
   font-size: 13px;
-  color: #999;
+  color: #000;
   text-align: center;
+  margin: 14px 0 0;
+  line-height: 1.4;
 }
-
-.footer a {
-  color: #111;
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1.5px solid #ddd;
-  padding-bottom: 1px;
-  transition: border-color 0.15s;
-}
-
-.footer a:hover { border-color: #111; }
 </style>

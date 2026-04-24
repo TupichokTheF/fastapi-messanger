@@ -1,6 +1,8 @@
 from fastapi import WebSocket, Depends
 from typing import Annotated
 
+from app.domain.user import User
+
 
 class ConnectionManager:
 
@@ -12,11 +14,18 @@ class ConnectionManager:
         self._active_connections[user_id] = web_socket
 
     async def disconnect(self, user_id: int, web_socket: WebSocket):
-        await web_socket.close(code=1000)
-        del self._active_connections[user_id]
+        try:
+            del self._active_connections[user_id]
+            await web_socket.close(code=1000)
+        except RuntimeError:
+            pass
+
+    def get_ws_by_user(self, user_id: int) -> WebSocket:
+        return self._active_connections[user_id]
+
+    def is_online(self, user_id: int):
+        return user_id in self._active_connections
 
     @property
     def active_connections(self):
         return self._active_connections
-
-ConManagerDep = Annotated[ConnectionManager, Depends(ConnectionManager)]
