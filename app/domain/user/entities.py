@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from app.domain.base.entity import BaseEntity
 from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
@@ -27,6 +28,10 @@ class User(BaseEntity):
     def password(self):
         return self._password.value
 
+    @property
+    def raw_username(self):
+        return self._username
+
     @staticmethod
     def create(username: str, email: str, password: str):
         username = UserUsername(username)
@@ -41,6 +46,7 @@ class User(BaseEntity):
 class Contact:
     _user: User
     _contact: User
+    _created_at: datetime = datetime.now()
 
     @property
     def user(self):
@@ -49,6 +55,10 @@ class Contact:
     @property
     def contact(self):
         return self._contact
+
+    @property
+    def created_at(self):
+        return self._created_at
 
     @staticmethod
     def create(user: User, contact: User):

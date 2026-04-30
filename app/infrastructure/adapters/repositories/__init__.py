@@ -1,3 +1,2 @@
 from app.infrastructure.adapters.repositories.user_repository import UserRepository
-from app.infrastructure.adapters.repositories.token_repository import TokenRepository
 from app.infrastructure.adapters.repositories.message_repository import MessageRepo

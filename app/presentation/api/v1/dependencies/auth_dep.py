@@ -13,12 +13,8 @@ async def get_current_user_ws(auth_service: AuthServiceDep,
                               refresh_token: str = Cookie()) -> User | None:
     try:
         return await auth_service.get_active_user(access_token, refresh_token)
-    except:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect access token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    except Exception as e:
+        raise e
 
 async def get_current_user(auth_service: AuthServiceDep,
                               access_token: str = Depends(oauth2_scheme),

@@ -1,7 +1,7 @@
 from redis import Redis
 
 
-class TokenRepository:
+class TokenCache:
 
     def __init__(self, redis_: Redis):
         self._redis = redis_
@@ -14,7 +14,7 @@ class TokenRepository:
         username = self._redis.get(name=f"refresh_token:{refresh_token}")
         if not username:
             return None
-        return username.decode()
+        return username.decode().split(':')[-1]
 
     async def delete_refresh_token(self, refresh_token: str):
         return self._redis.delete(f"refresh_token:{refresh_token}")

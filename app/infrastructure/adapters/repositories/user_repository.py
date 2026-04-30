@@ -26,7 +26,7 @@ class UserRepository:
         await self._session.commit()
         return "Contact added"
 
-    async def get_contacts(self, user: User):
+    async def get_contacts(self, user: User) -> list[Contact]:
         query = select(Contact).filter_by(user_id=user.id)
         res = await self._session.execute(query)
         return res.scalars().all()

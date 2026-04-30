@@ -1,4 +1,5 @@
-from app.infrastructure.adapters.repositories import UserRepository, TokenRepository
+from app.infrastructure.adapters.repositories import UserRepository
+from app.infrastructure.cache import TokenCache
 from app.application.services.exceptions import WrongTokenError, NotFoundError, WrongPasswordError
 from app.application.services.jwt_service import JWTService
 from app.domain.user import User
@@ -6,9 +7,9 @@ from app.domain.user import User
 
 class AuthService:
 
-    def __init__(self, user_repo: UserRepository, token_repo: TokenRepository, jwt_service: JWTService):
+    def __init__(self, user_repo: UserRepository, token_cache: TokenCache, jwt_service: JWTService):
         self._user_repo = user_repo
-        self._token_repo = token_repo
+        self._token_cache = token_cache
         self._jwt_service = jwt_service
 
     async def authenticate_user(self, username: str, password: str):
@@ -21,11 +22,11 @@ class AuthService:
 
     async def get_active_user(self, access_token: str, refresh_token: str):
         if await self.check_if_user_logout(refresh_token):
-            return None
+            raise WrongTokenError("Invalid token")
         return await self.get_user_by_token(access_token)
 
     async def check_if_user_logout(self, refresh_token: str) -> bool:
-        if not await self._token_repo.get_username_by_refresh_token(refresh_token):
+        if not await self._token_cache.get_username_by_refresh_token(refresh_token):
             return True
         return False
 

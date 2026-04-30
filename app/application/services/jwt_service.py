@@ -1,5 +1,5 @@
 from app.core.settings import settings
-from app.infrastructure.adapters.repositories import TokenRepository
+from app.infrastructure.cache import TokenCache
 from app.application.services.exceptions import NotFoundError, WrongTokenError
 
 from datetime import timedelta, timezone, datetime
@@ -9,12 +9,12 @@ from jwt.exceptions import InvalidTokenError
 
 class JWTService:
 
-    def __init__(self, token_repo: TokenRepository):
-        self._token_repo = token_repo
+    def __init__(self, token_cache: TokenCache):
+        self._token_cache = token_cache
 
     async def generate_refresh_token(self, data: dict):
         encoded_jwt = await self.generate_token(data, settings.REFRESH_TOKEN_EXPIRES)
-        await self._token_repo.add_refresh_token(encoded_jwt, data["sub"])
+        await self._token_cache.add_refresh_token(encoded_jwt, data["sub"])
         return encoded_jwt
 
     async def generate_token(self, data: dict, expires_delta: timedelta | None = settings.ACCESS_TOKEN_EXPIRES):
@@ -25,7 +25,7 @@ class JWTService:
         return encoded_jwt
 
     async def refresh_access_token(self, refresh_token: str):
-        username = await self._token_repo.get_username_by_refresh_token(refresh_token)
+        username = await self._token_cache.get_username_by_refresh_token(refresh_token)
         if not username:
             raise NotFoundError("Incorrect refresh_token")
         access_token = await self.generate_token({"sub": username})

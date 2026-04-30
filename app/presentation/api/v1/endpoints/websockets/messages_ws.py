@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket
 
 from app.presentation.api.v1.dependencies import AuthorizationWsDep, ConManagerDep, MessageServiceDep
 from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse, MessageToSend
@@ -24,11 +24,14 @@ async def websocket_endpoint(websocket: WebSocket, con_manager: ConManagerDep, m
             if con_manager.is_online(receiver.id):
                 receiver_websocket = con_manager.get_ws_by_user(receiver.id)
                 msg = MessageToSend(text=message.text,
-                                                           spender=message.spender.username,
-                                                           created_at=message.created_at)
+                                    spender=message.spender.username,
+                                    created_at=message.created_at)
                 await receiver_websocket.send_json(msg.model_dump(mode="json"))
             await websocket.send_json(MessageSendResponse(succeed=True,
                                                           detail="Message send",
                                                           created_at=message.created_at).model_dump(mode="json"))
     finally:
         await con_manager.disconnect(current_user.id, websocket)
+
+
+

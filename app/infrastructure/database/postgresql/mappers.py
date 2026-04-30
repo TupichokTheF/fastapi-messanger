@@ -39,7 +39,8 @@ contact_table = Table(
     "contacts",
     metadata,
     Column("user_id", Integer, ForeignKey("users.id"), primary_key=True, nullable = False),
-    Column("contact_id", Integer, ForeignKey("users.id"), primary_key=True, nullable = False)
+    Column("contact_id", Integer, ForeignKey("users.id"), primary_key=True, nullable = False),
+    Column("created_at", DateTime, nullable=False)
 )
 
 def init_tables():
@@ -84,6 +85,7 @@ def init_tables():
                 backref="contact_of",
                 lazy="joined",
             ),
+            "_created_at": contact_table.c.created_at,
         },
     )
 
