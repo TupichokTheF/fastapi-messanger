@@ -30,3 +30,8 @@ class UserRepository:
         query = select(Contact).filter_by(user_id=user.id)
         res = await self._session.execute(query)
         return res.scalars().all()
+
+    async def find_user_contact_by_id(self, user: User, contact_id: int):
+        query = select(Contact).filter_by(user_id=user.id, contact_id=contact_id)
+        res = await self._session.execute(query)
+        return res.scalars().one_or_none()

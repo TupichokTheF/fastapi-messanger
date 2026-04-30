@@ -30,6 +30,8 @@ async def websocket_endpoint(websocket: WebSocket, con_manager: ConManagerDep, m
             await websocket.send_json(MessageSendResponse(succeed=True,
                                                           detail="Message send",
                                                           created_at=message.created_at).model_dump(mode="json"))
+    except Exception:
+        pass
     finally:
         await con_manager.disconnect(current_user.id, websocket)
 
