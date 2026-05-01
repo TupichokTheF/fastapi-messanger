@@ -5,10 +5,13 @@ from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse, 
 from app.application.services.exceptions import NotFoundError
 from app.domain.message.exceptions import EmptyMessage
 
-messages_router = APIRouter(prefix="/ws")
+messages_ws = APIRouter(
+    tags = ["Websocket operations with messages"],
+    prefix="/ws",
+)
 
 
-@messages_router.websocket("/send_message")
+@messages_ws.websocket("/send_message")
 async def websocket_endpoint(websocket: WebSocket, con_manager: ConManagerDep, message_service: MessageServiceDep, current_user: AuthorizationWsDep):
     await con_manager.connect(current_user.id, websocket)
     try:

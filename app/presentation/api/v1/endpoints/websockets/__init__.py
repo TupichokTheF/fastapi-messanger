@@ -1,1 +1,1 @@
-from app.presentation.api.v1.endpoints.websockets.messages_ws import messages_router
+from app.presentation.api.v1.endpoints.websockets.messages_ws import messages_ws
