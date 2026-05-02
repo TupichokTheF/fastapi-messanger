@@ -35,5 +35,6 @@ class MessageService:
         return message_receiver
 
     async def get_latest_messages(self, user: User):
+        pass
 
 
