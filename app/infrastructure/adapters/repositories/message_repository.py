@@ -1,9 +1,9 @@
-from app.domain.message.entities import Message, MessageReceiver
+from app.domain.message.entities import Message
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class MessageRepo:
+class MessageRepository:
 
     def __init__(self, session: AsyncSession):
         self._session = session
@@ -13,9 +13,3 @@ class MessageRepo:
         await self._session.commit()
         await self._session.refresh(message)
         return message.id
-
-    async def add_message_receiver(self, message_receiver: MessageReceiver):
-        self._session.add(message_receiver)
-        await self._session.commit()
-        await self._session.refresh(message_receiver)
-        return message_receiver

@@ -1,14 +1,14 @@
-from app.infrastructure.adapters.repositories import MessageRepo, UserRepository
+from app.infrastructure.adapters.repositories import UserRepository, MessageRepository
 from app.infrastructure.cache import ContactsCache, MessagesCache
 from app.application.services import UserService
 from app.domain.user import User
-from app.domain.message import Message, MessageReceiver
+from app.domain.message import Message
 from app.application.services.exceptions import NotFoundError
 
 
 class MessageService:
 
-    def __init__(self, messages_repo: MessageRepo,
+    def __init__(self, messages_repo: MessageRepository,
                  user_repo: UserRepository,
                  contacts_cache_: ContactsCache,
                  user_service_: UserService,

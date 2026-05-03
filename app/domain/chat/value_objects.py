@@ -14,7 +14,7 @@ class ChatName(BaseValueObject):
             return
         if not self.value.strip():
             raise IncorrectNameError("Incorrect name of chat")
-        if len(self.value) > 40:
+        if len(self.value) > 50:
             raise IncorrectNameError("Name of the chat is too long")
 
 

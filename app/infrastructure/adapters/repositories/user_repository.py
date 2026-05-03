@@ -1,4 +1,4 @@
-from app.domain.user.entities import User, Contact
+from app.domain.user import User
 from app.domain.user.value_objects import UserPassword, UserEmail, UserUsername
 
 from sqlalchemy import select
@@ -21,17 +21,7 @@ class UserRepository:
         res = await self._session.execute(query)
         return res.scalars().first()
 
-    async def add_contact(self, contact: Contact):
-        self._session.add(contact)
-        await self._session.commit()
-        return "Contact added"
-
-    async def get_contacts(self, user: User) -> list[Contact]:
-        query = select(Contact).filter_by(user_id=user.id)
-        res = await self._session.execute(query)
-        return res.scalars().all()
-
-    async def find_user_contact_by_id(self, user: User, contact_id: int):
-        query = select(Contact).filter_by(user_id=user.id, contact_id=contact_id)
-        res = await self._session.execute(query)
-        return res.scalars().one_or_none()
+    #async def find_user_contact_by_id(self, user: User, contact_id: int):
+     #   query = select(Contact).filter_by(user_id=user.id, contact_id=contact_id)
+      #  res = await self._session.execute(query)
+       # return res.scalars().one_or_none()

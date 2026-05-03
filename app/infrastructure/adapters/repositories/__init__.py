@@ -1,2 +1,3 @@
 from app.infrastructure.adapters.repositories.user_repository import UserRepository
-from app.infrastructure.adapters.repositories.message_repository import MessageRepo
+from app.infrastructure.adapters.repositories.message_repository import MessageRepository
+from app.infrastructure.adapters.repositories.chat_repository import ChatRepository

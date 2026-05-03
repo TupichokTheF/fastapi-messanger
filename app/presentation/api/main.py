@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from contextlib import asynccontextmanager
 
+from app.application.services.exceptions import ApplicationError
 from app.presentation.api.v1.router import api_router
 from app.infrastructure.database.postgresql.db import database
 from app.domain.user.exceptions import DomainError

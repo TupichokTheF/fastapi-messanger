@@ -10,3 +10,6 @@ class WrongPasswordError(ApplicationError):
 
 class WrongTokenError(ApplicationError):
     pass
+
+class InvalidUsername(ApplicationError):
+    pass

@@ -10,11 +10,11 @@ class BaseResponse(BaseModel):
 class SignUpResponse(BaseResponse):
     id: int
 
-class AddedToContactResponse(BaseResponse):
+class AddedToChatResponse(BaseResponse):
     pass
 
-class UserContactsResponse(BaseResponse):
-    contacts: list[UserUsername]
+class UserChatsResponse(BaseResponse):
+    chats: list
 
 class ErrorResponse(BaseResponse):
     pass

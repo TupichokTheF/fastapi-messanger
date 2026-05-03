@@ -1,7 +1,5 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from fastapi import Depends
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from typing import Annotated
 
 from app.core.settings import settings
 from app.infrastructure.database.postgresql.mappers import init_tables, metadata
