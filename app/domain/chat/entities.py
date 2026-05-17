@@ -59,7 +59,8 @@ class Chat(BaseEntity):
         return self._members
 
     def add_members(self, members: set[User]):
-        if self._members & members:
+        existing_users = {member.user for member in self.members}
+        if existing_users & members:
             raise UserAlreadyAdded("User already member")
         for member in members:
             chat_member = ChatMember.create(member, self)

@@ -1,11 +1,11 @@
 from app.infrastructure.database.postgresql.db import database
-from app.infrastructure.database.redis.conn import get_redis
+from app.infrastructure.database.redis.conn import RedisCon
 
 from typing import Annotated
 from fastapi import Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
-import redis
+from redis.asyncio import Redis
 
 SessionDep = Annotated[AsyncSession, Depends(database.get_session)]
-RedisDep = Annotated[redis.Redis, Depends(get_redis)]
+RedisDep = Annotated[Redis, Depends(RedisCon.get_redis)]

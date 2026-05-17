@@ -4,9 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from contextlib import asynccontextmanager
 
-from app.application.services.exceptions import ApplicationError
 from app.presentation.api.v1.router import api_router
 from app.infrastructure.database.postgresql.db import database
+from app.infrastructure.database.redis.conn import RedisCon
 from app.domain.user.exceptions import DomainError
 from sqlalchemy.exc import IntegrityError
 
@@ -14,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 async def lifespan(app_: FastAPI):
     await database.init_database()
     yield
+    await RedisCon.dispose_redis()
     await database.dispose_database()
 
 app = FastAPI(

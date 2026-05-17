@@ -47,7 +47,7 @@ async def check_auth(jwt_service: JWTServiceDep, refresh_token: str = Cookie()):
         new_access_token = await jwt_service.refresh_access_token(refresh_token)
         return AccessToken(token=new_access_token, token_type="bearer")
     except NotFoundError as exc:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail={"detail": str(exc)}
         )
