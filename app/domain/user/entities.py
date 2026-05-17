@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 
 from app.domain.base.entity import BaseEntity
 from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
@@ -40,26 +39,3 @@ class User(BaseEntity):
         return User(_username=username,
                     _email=email,
                     _password=password)
-
-
-@dataclass(kw_only=True)
-class Contact:
-    _user: User
-    _contact: User
-    _created_at: datetime = datetime.now()
-
-    @property
-    def user(self):
-        return self._user
-
-    @property
-    def contact(self):
-        return self._contact
-
-    @property
-    def created_at(self):
-        return self._created_at
-
-    @staticmethod
-    def create(user: User, contact: User):
-        return Contact(_user=user, _contact=contact)

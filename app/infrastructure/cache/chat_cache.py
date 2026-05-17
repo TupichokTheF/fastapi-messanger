@@ -1,4 +1,4 @@
-from redis import Redis
+from redis.asyncio import Redis
 
 from app.domain.chat import Chat, ChatType
 from app.domain.message import Message
@@ -16,8 +16,7 @@ class ChatCache:
         if chat.type == ChatType.DIRECT:
             first, second = chat.members
             chat_name = f"{first.user.username}_{second.user.username}"
-        await self._redis.hset(f"chat:{chat.id}:preview", "chat_name", chat_name)
-        await self._redis.hset(f"chat:{chat.id}:preview", "chat_type", chat.type)
+        await self._redis.hset(f"chat:{chat.id}:preview", mapping={"chat_name": chat_name, "chat_type": chat.type})
         return True
 
     async def update_chat_score(self, user: User, chat: Chat):
@@ -36,14 +35,14 @@ class ChatCache:
             res.append(chat_preview)
         return res
 
-    async def update_chat_preview(self, chat: Chat, message: Message) -> str:
+    async def update_chat_preview(self, chat: Chat, message: Message) -> int:
         preview_data = {
             "chat_name": chat.name,
             "last_message": message.text,
             "last_message_spender": message.spender.username,
             "last_message_spend": message.created_at.timestamp()
         }
-        return await self._redis.hmset(f"chat:{chat.id}:preview", preview_data)
+        return await self._redis.hset(f"chat:{chat.id}:preview", mapping=preview_data)
 
 
 

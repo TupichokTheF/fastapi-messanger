@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 class ChatMember:
     _chat: "Chat"
     _member: User
-    _created_at: datetime = datetime.now()
+    _created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def user(self):
