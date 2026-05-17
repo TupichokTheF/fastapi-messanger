@@ -12,7 +12,7 @@ class AuthService:
         self._token_cache = token_cache
         self._jwt_service = jwt_service
 
-    async def authenticate_user(self, username: str, password: str):
+    async def authenticate_user(self, username: str, password: str) -> User:
         user = await self._user_repo.get_user_by_username(username)
         if not user:
             raise NotFoundError("Incorrect username")
@@ -20,7 +20,7 @@ class AuthService:
             raise WrongPasswordError("Incorrect password")
         return user
 
-    async def get_active_user(self, access_token: str, refresh_token: str):
+    async def get_active_user(self, access_token: str, refresh_token: str) -> User:
         if await self.check_if_user_logout(refresh_token):
             raise WrongTokenError("Invalid token")
         return await self.get_user_by_token(access_token)
@@ -37,7 +37,10 @@ class AuthService:
                 raise WrongTokenError("Invalid username")
         except WrongTokenError as exc:
             raise exc
-        user = await self._user_repo.get_user_by_username(username)
+        try:
+            user = await self._user_repo.get_user_by_username(username)
+        except Exception as e:
+            print(str(e))
         if user is None:
             raise NotFoundError("User not found by username")
         return user

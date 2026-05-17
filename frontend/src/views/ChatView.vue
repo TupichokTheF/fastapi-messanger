@@ -5,7 +5,6 @@ import { apiFetch } from '../utils/api'
 
 const router = useRouter()
 
-const contacts = ref([])
 const chats = ref([])
 const activeChat = ref(null)
 const activeContact = ref(null)
@@ -32,7 +31,7 @@ async function submitAddUser() {
   }
   addUserLoading.value = true
   try {
-    const res = await apiFetch('/api/v1/user/add_contact', {
+    const res = await apiFetch('/api/v1/chat/add_direct_chat', {
       method: 'POST',
       headers: {
         'accept': 'application/json',
@@ -46,6 +45,7 @@ async function submitAddUser() {
       return
     }
     showAddUser.value = false
+    fetchChats()
   } catch {
     addUserError.value = 'Ошибка соединения с сервером'
   } finally {
@@ -69,8 +69,27 @@ const currentUser = getUsernameFromToken(token)
 let ws = null
 
 const activeChatData = computed(() =>
-  chats.value.find((c) => c.id === activeChat.value) || null
+  chats.value.find((c) => c.chat_name === activeChat.value) || null
 )
+
+function chatDisplayName(chat) {
+  if (chat.chat_type === 'direct') {
+    const other = chat.chat_name
+      .split('_')
+      .filter((p) => p !== currentUser)
+      .join('_')
+    return other || chat.chat_name
+  }
+  return chat.chat_name
+}
+
+function openChatItem(chat) {
+  if (chat.chat_type === 'direct') {
+    openContact(chatDisplayName(chat))
+  } else {
+    openChat(chat.chat_name)
+  }
+}
 
 function disconnectWS() {
   if (!ws) return
@@ -170,16 +189,16 @@ function logout() {
   router.push('/login')
 }
 
-async function fetchContacts() {
+async function fetchChats() {
   try {
-    const res = await apiFetch('/api/v1/user/get_contacts', {
+    const res = await apiFetch('/api/v1/chat/get_chats', {
       headers: {
         'accept': 'application/json',
       },
     })
     if (!res.ok) return
     const data = await res.json()
-    contacts.value = data.contacts.map((c) => c.value)
+    chats.value = Array.isArray(data.chats) ? data.chats : []
   } catch {
     // handled silently
   }
@@ -193,7 +212,7 @@ function formatTime(iso) {
 }
 
 onMounted(() => {
-  fetchContacts()
+  fetchChats()
 })
 onUnmounted(() => {
   disconnectWS()
@@ -233,21 +252,27 @@ onUnmounted(() => {
 
       <nav class="chat-list">
         <button
-          v-for="username in contacts"
-          :key="username"
+          v-for="chat in chats"
+          :key="chat.chat_name"
           class="chat-item"
-          :class="{ active: username === activeContact }"
-          @click="openContact(username)"
+          :class="{
+            active:
+              (chat.chat_type === 'direct' && chatDisplayName(chat) === activeContact) ||
+              (chat.chat_type !== 'direct' && chat.chat_name === activeChat),
+          }"
+          @click="openChatItem(chat)"
         >
-          <span class="chat-avatar">{{ username[0].toUpperCase() }}</span>
+          <span class="chat-avatar">{{ (chatDisplayName(chat)[0] || '?').toUpperCase() }}</span>
           <span class="chat-meta">
-            <span class="chat-name">{{ username }}</span>
-            <span class="chat-sub">@{{ username }}</span>
+            <span class="chat-name">{{ chatDisplayName(chat) }}</span>
+            <span class="chat-sub">
+              {{ chat.chat_type === 'direct' ? '@' + chatDisplayName(chat) : 'групповой чат' }}
+            </span>
           </span>
         </button>
 
-        <p v-if="contacts.length === 0" class="empty-hint">
-          Список контактов пуст
+        <p v-if="chats.length === 0" class="empty-hint">
+          Чатов пока нет
         </p>
       </nav>
 
@@ -336,9 +361,9 @@ onUnmounted(() => {
 
       <template v-else-if="activeChat">
         <header class="chat-header">
-          <div class="chat-header-avatar">{{ activeChatData?.name[0].toUpperCase() }}</div>
+          <div class="chat-header-avatar">{{ (activeChatData?.chat_name[0] || '?').toUpperCase() }}</div>
           <div class="chat-header-meta">
-            <span class="chat-title">{{ activeChatData?.name }}</span>
+            <span class="chat-title">{{ activeChatData?.chat_name }}</span>
             <span class="chat-status">групповой чат</span>
           </div>
         </header>

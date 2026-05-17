@@ -45,7 +45,7 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
 if __name__ == "__main__":
     uvicorn.run(
         "app.presentation.api.main:app",
-        host="0.0.0.0",
+        host="localhost",
         port=8000,
-        reload=False,
+        reload=True,
     )

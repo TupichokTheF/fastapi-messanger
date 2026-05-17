@@ -18,12 +18,10 @@ async def websocket_endpoint(websocket: WebSocket, con_manager: ConManagerDep, m
         while True:
             user_data = await websocket.receive_json()
             try:
-                message_receiver = await message_service.send_message(user_data, current_user)
+                message, receiver = await message_service.send_direct_message(user_data, current_user)
             except (EmptyMessage, NotFoundError) as e:
                 await websocket.send_json(ErrorResponse(detail=str(e)).model_dump(mode="json"))
                 continue
-            receiver = message_receiver.receiver
-            message = message_receiver.message
             if con_manager.is_online(receiver.id):
                 receiver_websocket = con_manager.get_ws_by_user(receiver.id)
                 msg = MessageToSend(text=message.text,

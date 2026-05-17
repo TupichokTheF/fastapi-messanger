@@ -30,7 +30,7 @@ class Message(BaseEntity):
         return self._created_at
 
     @staticmethod
-    def create(spender: User, text: str):
+    def create(spender: User, text: str, chat: Chat):
         text = MessageText(text)
-        return Message(_spender= spender, _text=text)
+        return Message(_spender= spender, _text=text, _chat=chat)
 

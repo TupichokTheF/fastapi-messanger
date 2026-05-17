@@ -12,14 +12,14 @@ auth_router = APIRouter(
     prefix="/auth"
 )
 
-@auth_router.post("/sign_up", response_model=SignUpResponse)
+@auth_router.post(path="/sign_up", response_model=SignUpResponse)
 async def create_user(user_service: UserServiceDep, user_data: UserSignUp):
     user = User.create(**user_data.model_dump())
     user_id = await user_service.create_user(user)
     return SignUpResponse(id=user_id, succeed=True, detail="User successfully added")
 
 
-@auth_router.post("/sign_in", response_model=AccessToken)
+@auth_router.post(path="/sign_in", response_model=AccessToken)
 async def authenticate_user(auth_service: AuthServiceDep, jwt_service: JWTServiceDep, user_data: UserSignIn, response: Response):
     try:
         user = await auth_service.authenticate_user(user_data.username, user_data.password)
@@ -41,7 +41,7 @@ async def authenticate_user(auth_service: AuthServiceDep, jwt_service: JWTServic
     return AccessToken(token=access_token, token_type="bearer")
 
 
-@auth_router.post("/refresh", response_model=AccessToken)
+@auth_router.post(path="/refresh", response_model=AccessToken)
 async def check_auth(jwt_service: JWTServiceDep, refresh_token: str = Cookie()):
     try:
         new_access_token = await jwt_service.refresh_access_token(refresh_token)

@@ -13,3 +13,6 @@ class WrongTokenError(ApplicationError):
 
 class InvalidUsername(ApplicationError):
     pass
+
+class AlreadyExistError(ApplicationError):
+    pass

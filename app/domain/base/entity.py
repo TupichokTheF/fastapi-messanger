@@ -14,3 +14,6 @@ class BaseEntity(ABC):
 
     def __hash__(self):
         return hash(self.id)
+
+    def __lt__(self, other: "BaseEntity"):
+        return self.id < other.id

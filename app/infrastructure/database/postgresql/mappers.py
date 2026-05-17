@@ -3,7 +3,7 @@ from sqlalchemy.orm import registry, composite, relationship
 
 from app.domain.user import User, UserEmail, UserPassword, UserUsername
 from app.domain.message import Message, MessageText
-from app.domain.chat import Chat, ChatMember, ChatName, ChatType
+from app.domain.chat import Chat, ChatMember, ChatName, ChatType, DirectChat
 
 
 mapper_registry = registry()
@@ -21,7 +21,7 @@ user_table = Table(
 chat_table = Table(
     "chats",
     metadata,
-    Column("chat_id", Integer, primary_key=True),
+    Column("id", Integer, primary_key=True, autoincrement=True),
     Column("name", String(50), nullable = False),
     Column(
         "type",
@@ -38,16 +38,24 @@ chat_table = Table(
 chat_member = Table(
     "chat_member",
     metadata,
-    Column("chat_id", Integer, ForeignKey("chats.chat_id"), primary_key = True, nullable=False),
+    Column("chat_id", Integer, ForeignKey("chats.id"), primary_key = True, nullable=False),
     Column("member_id", Integer, ForeignKey("users.id"), primary_key=True, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+direct_chat = Table(
+    "direct_chats",
+    metadata,
+    Column("chat_id", Integer, ForeignKey("chats.id"), primary_key = True, nullable=False),
+    Column("first_user_id", Integer, ForeignKey("users.id"), primary_key=True, nullable=False),
+    Column("second_user_id", Integer, ForeignKey("users.id"), primary_key=True, nullable=False),
 )
 
 message_table = Table(
     "messages",
     metadata,
     Column('id', Integer, primary_key=True),
-    Column("chat_id", Integer, ForeignKey("chats.chat_id"), nullable=False),
+    Column("chat_id", Integer, ForeignKey("chats.id"), nullable=False),
     Column("spender_id", Integer, ForeignKey("users.id"), nullable=False),
     Column("text", String, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
@@ -90,6 +98,16 @@ def init_chat_tables():
             "_name": composite(ChatName, "col_name"),
             "_members": relationship(ChatMember, back_populates="_chat", lazy="selectin", collection_class=set),
             "_created_at": chat_table.c.created_at
+        }
+    )
+
+    mapper_registry.map_imperatively(
+        DirectChat,
+        direct_chat,
+        properties={
+            "_chat": relationship(Chat, lazy="joined"),
+            "_first_user": relationship(User, foreign_keys=[direct_chat.c.first_user_id], lazy="joined"),
+            "_second_user": relationship(User, foreign_keys=[direct_chat.c.second_user_id], lazy="joined"),
         }
     )
 

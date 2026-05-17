@@ -1,7 +1,7 @@
 import datetime
 
 from pydantic import BaseModel
-from app.domain.user.value_objects import UserUsername
+
 
 class BaseResponse(BaseModel):
     succeed: bool = False
@@ -14,7 +14,7 @@ class AddedToChatResponse(BaseResponse):
     pass
 
 class UserChatsResponse(BaseResponse):
-    chats: list
+    chats: list[dict]
 
 class ErrorResponse(BaseResponse):
     pass
