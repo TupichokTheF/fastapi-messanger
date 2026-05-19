@@ -14,7 +14,6 @@
 - **Redis** — кэширование чатов, сообщений и токенов
 - **PyJWT** + **bcrypt** — аутентификация и хеширование паролей
 - **Pydantic v2** / **pydantic-settings** — валидация и конфигурация
-- **Sentry SDK** — отслеживание ошибок
 
 ### Frontend
 - **Vue 3** (Composition API)
