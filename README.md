@@ -160,6 +160,6 @@ Dev-сервер Vite поднимется на `http://localhost:5173` и пр�
 
 ---
 
-## 👤 Автор
+## 👤 PlayBoy
 
 [**TupichokTheF**](https://github.com/TupichokTheF)
