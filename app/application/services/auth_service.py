@@ -37,10 +37,7 @@ class AuthService:
                 raise WrongTokenError("Invalid username")
         except WrongTokenError as exc:
             raise exc
-        try:
-            user = await self._user_repo.get_user_by_username(username)
-        except Exception as e:
-            print(str(e))
+        user = await self._user_repo.get_user_by_username(username)
         if user is None:
             raise NotFoundError("User not found by username")
         return user

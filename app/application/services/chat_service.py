@@ -18,14 +18,21 @@ class ChatService:
         contact_user = await self._user_repo.get_user_by_username(contact_username)
         if not contact_user:
             raise NotFoundError("Incorrect contact username")
+
         if direct_chat := await self._chat_repo.get_direct_chat_by_members(user, contact_user):
-            await self._chat_cache.update_chat_score(user, direct_chat.chat)
+            async with self._chat_cache as pipe:
+                pipe.update_chat_score(user, direct_chat.chat)
+
             raise AlreadyExistError("Direct chat with those members already exist")
+
         chat = Chat.create(user.username, {contact_user, user}, ChatType.DIRECT)
         direct_chat = DirectChat.create(chat=chat, first_user=user, second_user=contact_user)
+
         await self._chat_repo.add_direct_chat(direct_chat)
-        await self._chat_cache.update_user_chats(chat)
-        await self._chat_cache.update_chat_score(user, chat)
+        async with self._chat_cache as pipe:
+            pipe.update_user_chats(chat)
+            pipe.update_chat_score(user, chat)
+
         return True
 
     async def get_chats(self, user: User) -> list[dict]:
