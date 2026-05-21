@@ -22,7 +22,6 @@ class ChatService:
         if direct_chat := await self._chat_repo.get_direct_chat_by_members(user, contact_user):
             async with self._chat_cache as pipe:
                 pipe.update_chat_score(user, direct_chat.chat)
-
             raise AlreadyExistError("Direct chat with those members already exist")
 
         chat = Chat.create(user.username, {contact_user, user}, ChatType.DIRECT)
@@ -37,6 +36,9 @@ class ChatService:
 
     async def get_chats(self, user: User) -> list[dict]:
         chat_ids = await self._chat_cache.get_chat_ids(user)
+        if not chat_ids:
+            chats = await self._chat_repo.get_chats(user)
+            chat_ids = [c.id for c in chats]
         user_chats = await self._chat_cache.get_chats_previews(chat_ids)
         return user_chats
 
