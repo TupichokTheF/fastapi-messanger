@@ -15,6 +15,11 @@ class User(BaseEntity):
     def verify_password(self, users_password: str):
         return checkpw(users_password.encode("utf-8"), self.password.encode("utf-8"))
 
+    def to_dict(self) -> dict:
+        info = super().to_dict()
+        info.pop("_password")
+        return info
+
     @property
     def username(self):
         return self._username.value

@@ -26,3 +26,6 @@ class MessageToSend(BaseModel):
     text: str
     spender: str
     created_at: datetime.datetime
+
+class UserInfoResponse(BaseResponse):
+    info: dict

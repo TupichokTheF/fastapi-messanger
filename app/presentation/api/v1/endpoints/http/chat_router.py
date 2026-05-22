@@ -19,8 +19,8 @@ async def add_user_to_contact(user: AuthorizationDep, chat_service: ChatServiceD
             detail=str(e)
         )
 
-@chat_router.get(path="/get_chats", response_model=UserChatsResponse)
-async def get_chats(user: AuthorizationDep, chat_service: ChatServiceDep):
+@chat_router.get(path="/get_chats_preview", response_model=UserChatsResponse)
+async def get_chats_preview(user: AuthorizationDep, chat_service: ChatServiceDep):
     chats = await chat_service.get_chats(user)
     return UserChatsResponse(succeed=True, detail="Spend previews of user chats", chats=chats)
 

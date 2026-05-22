@@ -24,11 +24,12 @@ class MessageService:
         if not receiver:
             raise NotFoundError("Invalid username")
         direct_chat = await self._chat_repo.get_direct_chat_by_members(current_user, receiver)
-        message = Message.create(current_user, message_data["text"], direct_chat.chat)
+        message = Message.create(current_user, message_data["message"], direct_chat.chat)
         await self._messages_repo.add_message(message)
-        await self._chat_cache.update_chat_preview(direct_chat.chat, message)
-        await self._chat_cache.update_chat_score(current_user, direct_chat.chat)
-        await self._chat_cache.update_chat_score(receiver, direct_chat.chat)
+        async with self._chat_cache as pipe:
+            pipe.update_chat_preview(direct_chat.chat, message)
+            pipe.update_chat_score(current_user, direct_chat.chat)
+            pipe.update_chat_score(receiver, direct_chat.chat)
         return message, receiver
 
 
