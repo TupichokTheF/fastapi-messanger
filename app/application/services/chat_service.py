@@ -38,7 +38,7 @@ class ChatService:
         chat_ids = await self._chat_cache.get_chat_ids(user)
         if not chat_ids:
             chats = await self._chat_repo.get_chats(user)
-            chat_ids = [c.id for c in chats]
+            chat_ids = [c.chat_id for c in chats]
         user_chats = await self._chat_cache.get_chats_previews(chat_ids)
         return user_chats
 

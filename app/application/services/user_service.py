@@ -7,5 +7,7 @@ class UserService:
     def __init__(self, user_repo: UserRepository):
         self._user_repo = user_repo
 
-    async def create_user(self, user_data: User):
-        return await self._user_repo.create_user(user_data)
+    async def get_user_info(self, user: User) -> dict:
+        user_info = user.to_dict()
+        return user_info
+

@@ -1,5 +1,5 @@
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Optional
 
 
@@ -17,3 +17,6 @@ class BaseEntity(ABC):
 
     def __lt__(self, other: "BaseEntity"):
         return self.id < other.id
+
+    def to_dict(self) -> dict:
+        return asdict(self)

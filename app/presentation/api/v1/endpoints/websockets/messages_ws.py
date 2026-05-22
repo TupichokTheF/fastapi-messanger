@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket
+from fastapi import APIRouter, WebSocket, Cookie
 
 from app.presentation.api.v1.dependencies import AuthorizationWsDep, ConManagerDep, MessageServiceDep
 from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse, MessageToSend
@@ -12,8 +12,12 @@ messages_ws = APIRouter(
 
 
 @messages_ws.websocket("/send_message")
-async def websocket_endpoint(websocket: WebSocket, con_manager: ConManagerDep, message_service: MessageServiceDep, current_user: AuthorizationWsDep):
-    await con_manager.connect(current_user.id, websocket)
+async def websocket_endpoint(websocket: WebSocket,
+                             con_manager: ConManagerDep,
+                             message_service: MessageServiceDep,
+                             current_user: AuthorizationWsDep,
+                             chat_id: int = Cookie()):
+    await con_manager.connect(chat_id, current_user.id, websocket)
     try:
         while True:
             user_data = await websocket.receive_json()
@@ -22,16 +26,11 @@ async def websocket_endpoint(websocket: WebSocket, con_manager: ConManagerDep, m
             except (EmptyMessage, NotFoundError) as e:
                 await websocket.send_json(ErrorResponse(detail=str(e)).model_dump(mode="json"))
                 continue
-            if con_manager.is_online(receiver.id):
-                receiver_websocket = con_manager.get_ws_by_user(receiver.id)
-                msg = MessageToSend(text=message.text,
-                                    spender=message.spender.username,
-                                    created_at=message.created_at)
-                await receiver_websocket.send_json(msg.model_dump(mode="json"))
+            await con_manager.publish_message(user_data)
             await websocket.send_json(MessageSendResponse(succeed=True,
                                                           detail="Message send",
                                                           created_at=message.created_at).model_dump(mode="json"))
-    except Exception:
+    except Exception as e:
         pass
     finally:
         await con_manager.disconnect(current_user.id, websocket)

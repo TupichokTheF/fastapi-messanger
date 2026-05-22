@@ -25,6 +25,7 @@ class ChatCachePipeline:
 
     def update_chat_preview(self, chat: Chat, message: Message) -> None:
         preview_data = {
+            "chat_id": chat.id,
             "chat_name": chat.name,
             "last_message": message.text,
             "last_message_spender": message.spender.username,

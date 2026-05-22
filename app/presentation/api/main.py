@@ -1,17 +1,21 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
+import uvicorn, asyncio
 from contextlib import asynccontextmanager
 
 from app.presentation.api.v1.router import api_router
 from app.infrastructure.database.postgresql.db import database
 from app.infrastructure.database.redis.conn import RedisCon
+from app.infrastructure.websockets.con_manager import connection_manager
 from app.domain.user.exceptions import DomainError
+
 from sqlalchemy.exc import IntegrityError
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
+    asyncio.create_task(connection_manager.init_listening())
+    await asyncio.sleep(1)
     await database.init_database()
     yield
     await RedisCon.dispose_redis()

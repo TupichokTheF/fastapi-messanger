@@ -7,6 +7,8 @@ const router = useRouter()
 
 const chats = ref([])
 const activeChat = ref(null)
+const activeChatId = ref(null)
+const activeChatType = ref(null)
 const activeContact = ref(null)
 const messages = ref([])
 const newMessage = ref('')
@@ -65,6 +67,7 @@ function getUsernameFromToken(t) {
   }
 }
 const currentUser = getUsernameFromToken(token)
+const currentUserId = ref(null)
 
 let ws = null
 
@@ -84,6 +87,8 @@ function chatDisplayName(chat) {
 }
 
 function openChatItem(chat) {
+  activeChatId.value = chat.chat_id ?? null
+  activeChatType.value = chat.chat_type ?? null
   if (chat.chat_type === 'direct') {
     openContact(chatDisplayName(chat))
   } else {
@@ -104,6 +109,9 @@ function disconnectWS() {
 
 function connectWS() {
   disconnectWS()
+  if (activeChatId.value != null) {
+    document.cookie = `chat_id=${encodeURIComponent(activeChatId.value)}; path=/; SameSite=Lax`
+  }
   const proto = location.protocol === 'https:' ? 'wss' : 'ws'
   ws = new WebSocket(`${proto}://${location.host}/api/v1/ws/send_message?access_token=${token}`)
   ws.onmessage = (e) => {
@@ -114,7 +122,7 @@ function connectWS() {
       return
     }
     if (typeof msg !== 'object' || msg === null) return
-    if (!activeContact.value || msg.spender !== activeContact.value) return
+    if (activeChatId.value == null || String(msg.chat_id) !== String(activeChatId.value)) return
     messages.value.push(msg)
     scrollBottom()
   }
@@ -138,17 +146,24 @@ function openChat(chatId) {
 
 function sendMessage() {
   const text = newMessage.value.trim()
-  if (!text || !activeContact.value || !ws || ws.readyState !== WebSocket.OPEN) return
+  if (!text || !ws || ws.readyState !== WebSocket.OPEN) return
+  if (!activeContact.value && !activeChat.value) return
   const created_at = new Date().toISOString()
-  ws.send(JSON.stringify({
-    text,
-    receiver: activeContact.value,
-    created_at,
-  }))
+  const payload = {
+    sender: currentUser,
+    sender_id: currentUserId.value,
+    type: activeChatType.value,
+    chat_id: activeChatId.value,
+    message: text,
+  }
+  if (activeChatType.value === 'direct') {
+    payload.receiver = activeContact.value
+  }
+  ws.send(JSON.stringify(payload))
   messages.value.push({
-    text,
-    spender: currentUser,
-    receiver: activeContact.value,
+    chat_id: activeChatId.value,
+    sender: currentUser,
+    message: text,
     created_at,
   })
   scrollBottom()
@@ -189,29 +204,48 @@ function logout() {
   router.push('/login')
 }
 
+async function fetchMe() {
+  try {
+    const res = await apiFetch('/api/v1/user/me', {
+      headers: { 'accept': 'application/json' },
+    })
+    if (!res.ok) return
+    const data = await res.json()
+    const id = data && data.info ? data.info.id : null
+    if (id != null) {
+      currentUserId.value = id
+      localStorage.setItem('user_id', String(id))
+    }
+  } catch {
+    // handled silently
+  }
+}
+
 async function fetchChats() {
   try {
-    const res = await apiFetch('/api/v1/chat/get_chats', {
+    const res = await apiFetch('/api/v1/chat/get_chats_preview', {
       headers: {
         'accept': 'application/json',
       },
     })
     if (!res.ok) return
     const data = await res.json()
-    chats.value = Array.isArray(data.chats) ? data.chats : []
+    const list = Array.isArray(data.chats) ? data.chats : []
+    chats.value = list.map((c) => ({ ...c, chat_id: c.chat_id }))
   } catch {
     // handled silently
   }
 }
 
-function formatTime(iso) {
-  if (!iso) return ''
-  const d = new Date(iso)
+function formatTime(value) {
+  if (value == null || value === '') return ''
+  const d = typeof value === 'number' ? new Date(value * 1000) : new Date(value)
   if (isNaN(d)) return ''
   return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 }
 
 onMounted(() => {
+  fetchMe()
   fetchChats()
 })
 onUnmounted(() => {
@@ -337,9 +371,9 @@ onUnmounted(() => {
             v-for="(msg, i) in messages"
             :key="i"
             class="message"
-            :class="{ own: msg.spender === currentUser }"
+            :class="{ own: msg.sender === currentUser }"
           >
-            <div class="msg-bubble">{{ msg.text }}</div>
+            <div class="msg-bubble">{{ msg.message }}</div>
             <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
           </div>
         </div>
@@ -373,10 +407,10 @@ onUnmounted(() => {
             v-for="(msg, i) in messages"
             :key="i"
             class="message"
-            :class="{ own: msg.spender === currentUser }"
+            :class="{ own: msg.sender === currentUser }"
           >
-            <span v-if="msg.spender !== currentUser" class="msg-author">{{ msg.spender }}</span>
-            <div class="msg-bubble">{{ msg.text }}</div>
+            <span v-if="msg.sender !== currentUser" class="msg-author">{{ msg.sender }}</span>
+            <div class="msg-bubble">{{ msg.message }}</div>
             <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
           </div>
         </div>
