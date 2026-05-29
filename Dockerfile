@@ -1,9 +1,11 @@
 FROM python:3.12-alpine
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 WORKDIR /app
 
-COPY . .
+COPY pyproject.toml uv.lock ./
 
-RUN pip install -r requirements.txt
+RUN uv sync --frozen --no-cache
 
-CMD ["python", "-m", "app.presentation.api.main"]
+CMD ["uv", "run", "-m", "app.presentation.api.main"]
