@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from app.domain.base.entity import BaseEntity
 from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
+from app.domain.user.exceptions import InvalidArgument
 
 from bcrypt import checkpw
 
@@ -18,6 +19,10 @@ class User(BaseEntity):
     def to_dict(self) -> dict:
         info = super().to_dict()
         info.pop("_password")
+        info["email"] = info["_email"]["value"]
+        info["username"] = info["_username"]["value"]
+        info.pop("_email")
+        info.pop("_username")
         return info
 
     @property
@@ -38,6 +43,8 @@ class User(BaseEntity):
 
     @staticmethod
     def create(username: str, email: str, password: str):
+        if not all((username, email, password)):
+            raise InvalidArgument("Entered empty argument")
         username = UserUsername(username)
         email = UserEmail(email)
         password = UserPassword.create(password)
