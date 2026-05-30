@@ -3,6 +3,7 @@ from app.infrastructure.cache import ChatCache
 from app.domain.user import User
 from app.domain.chat import Chat, ChatType, DirectChat
 from app.application.services.exceptions import NotFoundError, InvalidUsername, AlreadyExistError
+from app.application.dtos import UserDTO
 
 
 class ChatService:
@@ -12,29 +13,30 @@ class ChatService:
         self._chat_repo = chat_repo_
         self._chat_cache = chat_cache_
 
-    async def add_to_direct_chat(self, user: User, contact_username: str) -> bool:
+    async def add_to_direct_chat(self, user: UserDTO, contact_username: str) -> bool:
         if contact_username == user.username:
             raise InvalidUsername("Invalid username to add")
-        contact_user = await self._user_repo.get_user_by_username(contact_username)
-        if not contact_user:
+        first_member = await self._user_repo.get_user_by_username(contact_username)
+        if not first_member:
             raise NotFoundError("Incorrect contact username")
+        second_member = await self._user_repo.get_user_by_username(user.username)
 
-        if direct_chat := await self._chat_repo.get_direct_chat_by_members(user, contact_user):
+        if direct_chat := await self._chat_repo.get_direct_chat_by_members(first_member, second_member):
             async with self._chat_cache as pipe:
                 pipe.update_chat_score(user, direct_chat.chat)
             raise AlreadyExistError("Direct chat with those members already exist")
 
-        chat = Chat.create(user.username, {contact_user, user}, ChatType.DIRECT)
-        direct_chat = DirectChat.create(chat=chat, first_user=user, second_user=contact_user)
+        chat = Chat.create(user.username, {first_member, second_member}, ChatType.DIRECT)
+        direct_chat = DirectChat.create(chat=chat, first_user=first_member, second_user=second_member)
 
         await self._chat_repo.add_direct_chat(direct_chat)
         async with self._chat_cache as pipe:
             pipe.update_user_chats(chat)
-            pipe.update_chat_score(user, chat)
+            pipe.update_chat_score(second_member, chat)
 
         return True
 
-    async def get_chats(self, user: User) -> list[dict]:
+    async def get_chats(self, user: UserDTO) -> list[dict]:
         chat_ids = await self._chat_cache.get_chat_ids(user)
         if not chat_ids:
             chats = await self._chat_repo.get_chats(user)

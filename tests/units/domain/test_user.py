@@ -60,14 +60,23 @@ class TestUser:
         assert user1 != user2
         assert user1 == user3
 
-    def test_user_creation(self):
+    @pytest.mark.parametrize("username, password, email, id",[
+                             ("", "1q2w3e", "dasd@mail.ru", 1),
+                             ("ssdadwad", "", "dasd@mail.ru", 1),
+                             ("dawdwda", "1q2w3e", "", 1)])
+    def test_user_creation(self, username: str, password: str, email: str, id: int):
         with pytest.raises(InvalidArgument):
-            self.user_create("", "1q2w3e", "dasd@mail.ru", 1)
-            self.user_create("ssdadwad", "", "dasd@mail.ru", 1)
-            self.user_create("dawdwda", "1q2w3e", "", 1)
+            self.user_create(username, password, email, id)
 
     def test_dict_view(self):
         user_1 = self.user_create("Maxim1", "1Q2w3e", "maks@mail.ru", 1)
 
         assert user_1.to_dict() == {"username": "Maxim1", "email": "maks@mail.ru", "id": 1}
+
+    def test_password_verification(self):
+        user_1 = self.user_create("ssdadwad", "1Q2w3e", "dasd@mail.ru", 1)
+
+        assert user_1.verify_password("") == False
+        assert user_1.verify_password("sad") == False
+        assert user_1.verify_password("1Q2w3e")
 

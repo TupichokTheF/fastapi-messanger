@@ -14,6 +14,8 @@ class User(BaseEntity):
     _password: UserPassword
 
     def verify_password(self, users_password: str):
+        if not users_password:
+            return False
         return checkpw(users_password.encode("utf-8"), self.password.encode("utf-8"))
 
     def to_dict(self) -> dict:

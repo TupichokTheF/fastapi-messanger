@@ -2,6 +2,7 @@ from app.infrastructure.adapters.repositories import UserRepository
 from app.infrastructure.cache import TokenCache
 from app.application.services.exceptions import WrongTokenError, NotFoundError, WrongPasswordError
 from app.application.services.jwt_service import JWTService
+from app.application.dtos import UserDTO
 from app.domain.user import User
 
 
@@ -12,25 +13,26 @@ class AuthService:
         self._token_cache = token_cache
         self._jwt_service = jwt_service
 
-    async def authenticate_user(self, username: str, password: str) -> User:
+    async def authenticate_user(self, username: str, password: str) -> UserDTO:
         user = await self._user_repo.get_user_by_username(username)
         if not user:
             raise NotFoundError("Incorrect username")
         if not user.verify_password(password):
             raise WrongPasswordError("Incorrect password")
-        return user
+        return UserDTO.from_entity(user)
 
-    async def get_active_user(self, access_token: str, refresh_token: str) -> User:
+    async def get_active_user(self, access_token: str, refresh_token: str) -> UserDTO:
         if await self.check_if_user_logout(refresh_token):
             raise WrongTokenError("Invalid token")
-        return await self.get_user_by_token(access_token)
+        user = await self._get_user_by_token(access_token)
+        return UserDTO.from_entity(user)
 
     async def check_if_user_logout(self, refresh_token: str) -> bool:
         if not await self._token_cache.get_username_by_refresh_token(refresh_token):
             return True
         return False
 
-    async def get_user_by_token(self, access_token: str) -> User:
+    async def _get_user_by_token(self, access_token: str) -> User:
         try:
             username = self._jwt_service.get_username_by_access_token(access_token)
             if username is None:
