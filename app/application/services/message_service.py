@@ -28,8 +28,8 @@ class MessageService:
         await self._messages_repo.add_message(message)
         async with self._chat_cache as pipe:
             pipe.update_chat_preview(direct_chat.chat, message)
-            pipe.update_chat_score(current_user, direct_chat.chat)
-            pipe.update_chat_score(receiver, direct_chat.chat)
+            pipe.update_chat_score(current_user.id, direct_chat.chat)
+            pipe.update_chat_score(receiver.id, direct_chat.chat)
         return message, receiver
 
 

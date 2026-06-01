@@ -15,8 +15,8 @@ class ChatRepository:
         await self._session.commit()
         return "Contact added"
 
-    async def get_chats(self, user: User):
-        query = select(ChatMember).filter_by(member_id=user.id)
+    async def get_chats(self, user_id: int):
+        query = select(ChatMember).filter_by(member_id=user_id)
         res = await self._session.execute(query)
         return res.scalars().all()
 

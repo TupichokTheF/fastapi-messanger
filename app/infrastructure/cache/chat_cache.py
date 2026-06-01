@@ -19,9 +19,9 @@ class ChatCachePipeline:
             chat_name = f"{first.user.username}_{second.user.username}"
         self._pipeline.hset(f"chat:{chat.id}:preview", mapping={"chat_name": chat_name, "chat_type": chat.type})
 
-    def update_chat_score(self, user: User, chat: Chat) -> None:
+    def update_chat_score(self, user_id: int, chat: Chat) -> None:
         score = int(chat.created_at.timestamp() * 1000)
-        self._pipeline.zadd(f"chats:{user.id}", {f"chat:{chat.id}": score})
+        self._pipeline.zadd(f"chats:{user_id}", {f"chat:{chat.id}": score})
 
     def update_chat_preview(self, chat: Chat, message: Message) -> None:
         preview_data = {
@@ -40,8 +40,8 @@ class ChatCache:
         self._redis = redis_
         self._pipeline = self._redis.pipeline(transaction=False)
 
-    async def get_chat_ids(self, user: User) -> list[int]:
-        chats = await self._redis.zrevrange(f"chats:{user.id}", 0, -1)
+    async def get_chat_ids(self, user_id: int) -> list[int]:
+        chats = await self._redis.zrevrange(f"chats:{user_id}", 0, -1)
         res = [int(chat.split(':')[-1]) for chat in chats]
         return res
 
