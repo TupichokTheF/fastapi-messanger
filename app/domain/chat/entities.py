@@ -1,7 +1,7 @@
 from app.domain.base.entity import BaseEntity
 from app.domain.user.entities import User
 from app.domain.chat.value_objects import ChatName, ChatType
-from app.domain.chat.exceptions import UserAlreadyAdded
+from app.domain.chat.exceptions import UserAlreadyAdded, IncorrectChatMembers
 
 from dataclasses import dataclass, field
 
@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 
 @dataclass(kw_only=True, eq=False)
-class ChatMember:
+class ChatMember(BaseEntity):
     _chat: "Chat"
     _member: User
     _created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -25,14 +25,6 @@ class ChatMember:
     @staticmethod
     def create(member_: User, chat_: "Chat"):
         return ChatMember(_member=member_, _chat=chat_)
-
-    def __eq__(self, other):
-        if not isinstance(other, ChatMember):
-            return NotImplemented
-        return self._chat is other._chat and self._member == other._member
-
-    def __hash__(self):
-        return hash((self._chat, self._member))
 
 
 @dataclass(kw_only=True, eq=False)
@@ -64,9 +56,14 @@ class Chat(BaseEntity):
             raise UserAlreadyAdded("User already member")
         for member in members:
             chat_member = ChatMember.create(member, self)
+            self._members.add(chat_member)
 
     @staticmethod
     def create(name_: str, members_: set[User], type_: ChatType):
+        if len(members_) < 1:
+            raise IncorrectChatMembers("Incorrect count of members for direct chat")
+        if type_ == ChatType.DIRECT and len(members_) != 2:
+            raise IncorrectChatMembers("Incorrect count of members for direct chat")
         name_ = ChatName(name_)
         chat = Chat(_name=name_, _type=type_)
         chat.add_members(members_)

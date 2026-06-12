@@ -6,3 +6,6 @@ class IncorrectNameError(DomainError):
 
 class UserAlreadyAdded(DomainError):
     pass
+
+class IncorrectChatMembers(DomainError):
+    pass

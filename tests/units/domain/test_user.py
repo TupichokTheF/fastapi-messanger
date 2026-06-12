@@ -2,6 +2,7 @@ import pytest
 
 from app.domain.user import User, UserUsername, UserEmail
 from app.domain.user.exceptions import ValidationError, InvalidArgument
+from .utils import create_user
 
 
 class TestUsername:
@@ -45,12 +46,6 @@ class TestUserEmail:
         assert email_1 != email_3
 
 class TestUser:
-
-    @staticmethod
-    def user_create(username: str, password: str, email: str, id_: int) -> User:
-        user = User.create(username, email, password)
-        user.id = id_
-        return user
 
     def test_user_equality(self):
         user1 = self.user_create("test12345", "1Q2w3e", "maks1@mail.ru", 1)

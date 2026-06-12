@@ -22,12 +22,12 @@ class AuthService:
         return UserDTO.from_entity(user)
 
     async def get_active_user(self, access_token: str, refresh_token: str) -> UserDTO:
-        if await self.check_if_user_logout(refresh_token):
+        if await self._check_if_user_logout(refresh_token):
             raise WrongTokenError("Invalid token")
         user = await self._get_user_by_token(access_token)
         return UserDTO.from_entity(user)
 
-    async def check_if_user_logout(self, refresh_token: str) -> bool:
+    async def _check_if_user_logout(self, refresh_token: str) -> bool:
         if not await self._token_cache.get_username_by_refresh_token(refresh_token):
             return True
         return False
