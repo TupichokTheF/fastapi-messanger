@@ -1,0 +1,16 @@
+from app.infrastructure.cache import TokenCache, ChatCache
+from app.presentation.api.v1.dependencies import RedisDep
+
+from fastapi import Depends
+from typing import Annotated
+
+
+def get_token_cache(redis: RedisDep):
+    return TokenCache(redis)
+
+def get_chat_cache(redis: RedisDep):
+    return ChatCache(redis)
+
+ChatCacheDep = Annotated[ChatCache, Depends(get_chat_cache)]
+TokenCacheDep = Annotated[TokenCache, Depends(get_token_cache)]
+

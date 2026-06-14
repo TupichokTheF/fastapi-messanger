@@ -1,0 +1,22 @@
+from abc import ABC
+from dataclasses import dataclass, asdict
+from typing import Optional
+
+
+@dataclass(eq=False, kw_only=True)
+class BaseEntity(ABC):
+    id: Optional[int] = None
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
+    def __lt__(self, other: "BaseEntity"):
+        return self.id < other.id
+
+    def to_dict(self) -> dict:
+        return asdict(self)
