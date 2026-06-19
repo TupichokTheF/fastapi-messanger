@@ -2,10 +2,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn
 
 from datetime import timedelta
+from pathlib import Path
 
 class Settings(BaseSettings):
+    BASE_PATH: str = str(Path(__file__).resolve().parents[1])
+    LOGGING_CONFIG: str = f"{BASE_PATH}/core/logging/config.json"
+
     model_config = SettingsConfigDict(
-        env_file='../../../.env.local',
+        env_file=f'{BASE_PATH}/../.env.local',
         extra='ignore'
     )
 

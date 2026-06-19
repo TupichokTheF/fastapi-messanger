@@ -1,10 +1,12 @@
+import logging
+
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn, asyncio
 from contextlib import asynccontextmanager
 
-from app.core.log_config import Logger
+from app.core.logging.log_config import Logger
 from app.infrastructure.adapters.log_handlers import KafkaHandler
 from app.presentation.api.v1.router import api_router
 from app.infrastructure.database.postgresql.db import database
@@ -29,7 +31,9 @@ async def send_logs(queue: Queue, producer: KafkaProducer):
 def setup_kafka_logger(producer: KafkaProducer):
     queue = Queue()
     loop = asyncio.get_running_loop()
+
     kafka_handler = KafkaHandler(queue, loop)
+    kafka_handler.setLevel(level=logging.INFO)
     logger = Logger()
     logger.add_handler(kafka_handler)
 

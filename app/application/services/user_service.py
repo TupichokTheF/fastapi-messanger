@@ -1,5 +1,6 @@
 from app.infrastructure.adapters.repositories import UserRepository
 from app.domain.user import User
+from app.application.dtos.user_dto import UserSignUpDTO
 
 
 class UserService:
@@ -7,7 +8,8 @@ class UserService:
     def __init__(self, user_repo: UserRepository):
         self._user_repo = user_repo
 
-    async def get_user_info(self, user: User) -> dict:
-        user_info = user.to_dict()
-        return user_info
+    async def create_user(self, user_dto: UserSignUpDTO):
+        user = user_dto.to_entity()
+        user_id = await self._user_repo.create_user(user)
 
+        return user_id

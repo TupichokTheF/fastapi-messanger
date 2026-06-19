@@ -1,4 +1,4 @@
-from app.core.log_config import AbstractHandler
+from app.core.logging.log_config import AbstractHandler
 
 from asyncio import Queue, AbstractEventLoop
 

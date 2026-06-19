@@ -1,1 +1,1 @@
-from app.application.dtos.user_dto import UserDTO
+from app.application.dtos.user_dto import UserDTO, UserSignUpDTO

@@ -1,11 +1,11 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 from app.domain.user import User
 
 
 @dataclass(kw_only=True)
 class UserDTO:
-    id: int
+    id: int = field(default=None)
     username: str
     email: str
 
@@ -15,3 +15,15 @@ class UserDTO:
 
     def to_dict(self):
         return asdict(self)
+
+@dataclass(kw_only=True)
+class UserSignUpDTO(UserDTO):
+    password: str = field(default=None)
+
+    @classmethod
+    def from_entity(cls, user: User):
+        user_base = super().from_entity(user)
+        return user_base
+
+    def to_entity(self):
+        return User.create(self.username, self.email, self.password)

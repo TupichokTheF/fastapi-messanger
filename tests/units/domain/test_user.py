@@ -1,8 +1,7 @@
 import pytest
 
-from app.domain.user import User, UserUsername, UserEmail
+from app.domain.user import UserUsername, UserEmail
 from app.domain.user.exceptions import ValidationError, InvalidArgument
-from .utils import create_user
 
 
 class TestUsername:

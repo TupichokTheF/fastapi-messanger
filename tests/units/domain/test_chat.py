@@ -1,9 +1,9 @@
 import pytest
 
-from app.domain.chat import ChatMember, Chat, ChatName
+from app.domain.chat import ChatMember, ChatName
 from app.domain.chat.exceptions import IncorrectNameError, IncorrectChatMembers
 
-from .utils import create_chat, create_user
+from tests.units.utils import create_chat, create_user
 
 class TestChatName:
 

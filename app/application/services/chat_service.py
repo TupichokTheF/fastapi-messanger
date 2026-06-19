@@ -34,7 +34,7 @@ class ChatService:
             pipe.update_user_chats(chat)
             pipe.update_chat_score(second_member.id, chat)
 
-        return True
+        return chat.id
 
     async def get_chats(self, user: UserDTO) -> list[dict]:
         chat_ids = await self._chat_cache.get_chat_ids(user.id)
