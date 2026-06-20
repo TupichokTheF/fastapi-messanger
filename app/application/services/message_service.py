@@ -11,12 +11,10 @@ class MessageService:
     def __init__(self, messages_repo: MessageRepository,
                  user_repo: UserRepository,
                  chat_cache_: ChatCache,
-                 #user_service_: UserService,
                  chat_repo_: ChatRepository):
         self._messages_repo = messages_repo
         self._user_repo = user_repo
         self._chat_cache = chat_cache_
-        #self._user_service = user_service_
         self._chat_repo = chat_repo_
 
     async def send_direct_message(self, message_data: dict, current_user: User):
@@ -28,8 +26,8 @@ class MessageService:
         await self._messages_repo.add_message(message)
         async with self._chat_cache as pipe:
             pipe.update_chat_preview(direct_chat.chat, message)
-            pipe.update_chat_score(current_user, direct_chat.chat)
-            pipe.update_chat_score(receiver, direct_chat.chat)
+            pipe.update_chat_score(current_user.id, direct_chat.chat)
+            pipe.update_chat_score(receiver.id, direct_chat.chat)
         return message, receiver
 
 

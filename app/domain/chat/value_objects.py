@@ -11,7 +11,7 @@ class ChatName(BaseValueObject):
 
     def __post_init__(self):
         if not self.value:
-            return
+            raise IncorrectNameError("Empty name of chat")
         if not self.value.strip():
             raise IncorrectNameError("Incorrect name of chat")
         if len(self.value) > 50:
