@@ -11,10 +11,9 @@
 - **FastAPI** + **Uvicorn** (ASGI-сервер)
 - **WebSockets** — обмен сообщениями в реальном времени
 - **SQLAlchemy 2.0** (async) + **asyncpg** — работа с PostgreSQL
-- **Redis** — кэширование чатов, сообщений и токенов
+- **Redis** + **Redis Pub/Sub** — кэширование чатов, сообщений и токенов; отправка сообщений между инстансами
 - **PyJWT** + **bcrypt** — аутентификация и хеширование паролей
 - **Pydantic v2** / **pydantic-settings** — валидация и конфигурация
-- **Sentry SDK** — отслеживание ошибок
 
 ### Frontend
 - **Vue 3** (Composition API)
@@ -161,6 +160,6 @@ Dev-сервер Vite поднимется на `http://localhost:5173` и пр�
 
 ---
 
-## 👤 Автор
+## 👤 PlayBoy
 
 [**TupichokTheF**](https://github.com/TupichokTheF)
