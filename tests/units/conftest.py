@@ -18,9 +18,10 @@ def user_maker() -> Callable[[str, str, str, int], User]:
     return _make
 
 @pytest.fixture()
-def chat_maker() -> Callable[[str, set[User], ChatType], Chat]:
-    def _make(chat_name: str, members: set[User], chat_type: ChatType) -> Chat:
+def chat_maker() -> Callable[[str, set[User], ChatType, int], Chat]:
+    def _make(chat_name: str, members: set[User], chat_type: ChatType, chat_id: int) -> Chat:
         chat = Chat.create(chat_name, members, chat_type)
+        chat.id = chat_id
         return chat
 
     return _make
@@ -29,17 +30,17 @@ def chat_maker() -> Callable[[str, set[User], ChatType], Chat]:
 def default_direct_chat(chat_maker, user_maker) -> Chat:
     first_user = user_maker("first_user", "1Q2w3e", "maks@mail.ru", 1)
     second_user = user_maker("second_user", "1Q2w3e", "bob@mail.ru", 2)
-    chat = chat_maker("default chat", {first_user, second_user}, ChatType.DIRECT)
+    chat = chat_maker("default chat", {first_user, second_user}, ChatType.DIRECT, 1)
 
     return chat
 
 
 @pytest.fixture()
-def direct_message_maker(user_maker, chat_maker) -> Callable[[str, int], Message]:
-    def _make(text: str, message_id: int) -> Message:
+def direct_message_maker(user_maker, chat_maker) -> Callable[[str, int, int], Message]:
+    def _make(text: str, message_id: int, chat_id: int) -> Message:
         sender = user_maker("test_sender", "1Q2w3e", "test@mail.ru", 11)
         receiver = user_maker("test_receiver", "1Q2w3e", "test2@mail.ru", 12)
-        chat = chat_maker("test_chat", {sender, receiver}, ChatType.DIRECT)
+        chat = chat_maker("test_chat", {sender, receiver}, ChatType.DIRECT, chat_id)
         message = Message.create(sender=sender, text=text, chat=chat)
         message.id = message_id
         return message

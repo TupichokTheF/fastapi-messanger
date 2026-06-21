@@ -23,19 +23,19 @@ class TestChat:
     def test_creation_of_direct_chat(self, chat_name: str,
                                      members: list[str],
                                      user_maker: Callable[[str, str, str, int], User],
-                                     chat_maker: Callable[[str, set[User], ChatType], Chat]):
+                                     chat_maker: Callable[[str, set[User], ChatType, int], Chat]):
         members = {user_maker(username, '1Q2w3e', 'm@m.ru', key) for key, username in enumerate(members)}
         with pytest.raises(IncorrectChatMembers):
-            chat_maker(chat_name, members, ChatType.DIRECT)
+            chat_maker(chat_name, members, ChatType.DIRECT, 1)
 
 
     def test_add_members_to_direct_chat(self,
                                         user_maker: Callable[[str, str, str, int], User],
-                                        chat_maker: Callable[[str, set[User], ChatType], Chat]):
+                                        chat_maker: Callable[[str, set[User], ChatType, int], Chat]):
         first_user = user_maker("user_1", "1Q2w3e", "m@mail.ru", 1)
         second_user = user_maker("user_2", "1Q2w3e", "s@mail.ru", 2)
         members = {first_user, second_user}
-        chat = chat_maker("test_chat", members, ChatType.DIRECT)
+        chat = chat_maker("test_chat", members, ChatType.DIRECT, 1)
 
         chat_members = set()
         for member in members:

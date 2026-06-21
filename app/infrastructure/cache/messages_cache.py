@@ -19,6 +19,7 @@ class MessageCachePipe:
         }
         self._pipe.hset(name=f'message:{message.id}', mapping=message_data)
         self._pipe.zadd(name=f'chat:{message.chat.id}:messages', mapping={f'message:{message.id}': score})
+        self._pipe.zremrangebyrank(name=f'chat:{message.chat.id}:messages', min=50, max=-1)
 
 
 class MessagesCache:
