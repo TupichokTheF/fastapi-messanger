@@ -14,7 +14,7 @@
 - **Redis** + **Redis Pub/Sub** — кэширование чатов, сообщений и токенов; отправка сообщений между инстансами
 - **PyJWT** + **bcrypt** — аутентификация и хеширование паролей
 - **Pydantic v2** / **pydantic-settings** — валидация и конфигурация
-- **Apache Kafka** - применяется для отправки логов
+- **Pytest** - юнит и интеграционные тесты
 
 ### Frontend
 - **Vue 3** (Composition API)
@@ -25,6 +25,7 @@
 - **Docker** + **Docker Compose**
 - **PostgreSQL 16** (Alpine)
 - **Redis 7** (Alpine)
+- **Apache Kafka** - применяется для отправки логов
 
 ---
 
