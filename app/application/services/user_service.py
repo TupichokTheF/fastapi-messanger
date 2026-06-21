@@ -5,7 +5,7 @@ from app.application.dtos.user_dto import UserSignUpDTO
 
 class UserService:
 
-    def __init__(self, user_repo: UserRepository):
+    def __init__(self, user_repo: AbstractUserRepository):
         self._user_repo = user_repo
 
     async def create_user(self, user_dto: UserSignUpDTO):
