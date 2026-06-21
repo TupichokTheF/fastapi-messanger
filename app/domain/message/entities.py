@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 @dataclass(kw_only=True, eq=False)
 class Message(BaseEntity):
-    _spender: User
+    _sender: User
     _chat: Chat
     _text: MessageText
     _created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -18,8 +18,8 @@ class Message(BaseEntity):
         return self._text.value
 
     @property
-    def spender(self):
-        return self._spender
+    def sender(self):
+        return self._sender
 
     @property
     def chat(self):
@@ -30,7 +30,7 @@ class Message(BaseEntity):
         return self._created_at
 
     @staticmethod
-    def create(spender: User, text: str, chat: Chat):
+    def create(sender: User, text: str, chat: Chat):
         text = MessageText(text)
-        return Message(_spender= spender, _text=text, _chat=chat)
+        return Message(_sender= sender, _text=text, _chat=chat)
 
