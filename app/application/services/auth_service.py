@@ -28,9 +28,7 @@ class AuthService:
         return UserDTO.from_entity(user)
 
     async def _check_if_user_logout(self, refresh_token: str) -> bool:
-        if not await self._token_cache.get_username_by_refresh_token(refresh_token):
-            return True
-        return False
+        return not await self._token_cache.get_username_by_refresh_token(refresh_token)
 
     async def _get_user_by_token(self, access_token: str) -> User:
         try:
