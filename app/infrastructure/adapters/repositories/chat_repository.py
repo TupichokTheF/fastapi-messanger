@@ -1,11 +1,11 @@
-from app.domain.chat import Chat, ChatMember, DirectChat
+from app.domain.chat import Chat, ChatMember, DirectChat, AbstractChatRepository
 from app.domain.user import User
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class ChatRepository:
+class ChatRepository(AbstractChatRepository):
 
     def __init__(self, session_: AsyncSession):
         self._session = session_
@@ -15,13 +15,16 @@ class ChatRepository:
         await self._session.commit()
         return "Contact added"
 
-    async def get_chats(self, user_id: int):
-        query = select(ChatMember).filter_by(member_id=user_id)
-        res = await self._session.execute(query)
-        return res.scalars().all()
+    async def get_chats_by_user_id(self, user_id: int):
+        get_chat_ids_query = select(ChatMember).filter_by(member_id=user_id)
+        chat_ids = await self._session.execute(get_chat_ids_query)
+        chat_ids = chat_ids.scalars().all()
 
-    async def get_chat_by_name(self, name: str):
-        query = select(Chat).filter_by(name=name)
+        chats = [self.get_chat_by_id(chat_id) for chat_id in chat_ids]
+        return chats
+
+    async def get_chat_by_id(self, chat_id: int):
+        query = select(Chat).filter_by(id=chat_id)
         res = await self._session.execute(query)
         return res.scalars().first()
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, HTTPException, status
 
-from app.presentation.api.v1.dependencies.auth_dep import AuthorizationDep
+from app.presentation.api.v1.dependencies.domain_dep import AuthorizationDep
 from app.presentation.api.v1.dependencies import ChatServiceDep
 from app.presentation.api.v1.schemas.responses import AddedToChatResponse, UserChatsResponse
 
@@ -26,12 +26,12 @@ async def add_user_to_contact(current_user: AuthorizationDep, chat_service: Chat
             detail=str(e)
         )
 
-    logger.info(f"Direct chat created | chat_id={chat_id}")
+    logger.info(f"Direct chat created | chat_id={chat_id}", extra = {"chat_id": chat_id})
     return AddedToChatResponse(succeed=True, detail="User added to contact")
 
 @chat_router.get(path="/get_chats_preview", response_model=UserChatsResponse)
 async def get_chats_preview(current_user: AuthorizationDep, chat_service: ChatServiceDep):
-    chats = await chat_service.get_chats(current_user)
+    chats = await chat_service.get_user_chats_by_id(current_user)
 
     logger.info(f"Send user chat previews | user_id={current_user.id}", extra={"user_id": current_user.id})
     return UserChatsResponse(succeed=True, detail="Send previews of user chats", chats=chats)

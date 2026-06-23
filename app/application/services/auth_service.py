@@ -1,14 +1,16 @@
-from app.infrastructure.adapters.repositories import UserRepository
 from app.infrastructure.cache import TokenCache
 from app.application.services.exceptions import WrongTokenError, NotFoundError, WrongPasswordError
 from app.application.services.jwt_service import JWTService
 from app.application.dtos import UserDTO
-from app.domain.user import User
+from app.domain.user import User, AbstractUserRepository
 
 
 class AuthService:
 
-    def __init__(self, user_repo: UserRepository, token_cache: TokenCache, jwt_service: JWTService):
+    def __init__(self,
+                 user_repo: AbstractUserRepository,
+                 token_cache: TokenCache,
+                 jwt_service: JWTService):
         self._user_repo = user_repo
         self._token_cache = token_cache
         self._jwt_service = jwt_service

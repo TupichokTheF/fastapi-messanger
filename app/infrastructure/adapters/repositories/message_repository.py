@@ -1,9 +1,9 @@
-from app.domain.message.entities import Message
+from app.domain.message import Message, AbstractMessageRepo
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class MessageRepository:
+class MessageRepository(AbstractMessageRepo):
 
     def __init__(self, session: AsyncSession):
         self._session = session

@@ -56,10 +56,12 @@ async def authenticate_user(auth_service: AuthServiceDep, jwt_service: JWTServic
 async def check_auth(jwt_service: JWTServiceDep, refresh_token: str = Cookie()):
     try:
         new_access_token = await jwt_service.refresh_access_token(refresh_token)
-        return AccessToken(token=new_access_token, token_type="bearer")
     except NotFoundError as exc:
         logger.warning("Failed refresh token")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail={"detail": str(exc)}
         )
+
+    logging.info("Token was refreshed")
+    return AccessToken(token=new_access_token, token_type="bearer")

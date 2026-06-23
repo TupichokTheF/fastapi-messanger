@@ -9,3 +9,6 @@ class UserAlreadyAdded(DomainError):
 
 class IncorrectChatMembers(DomainError):
     pass
+
+class ChatAccessDenied(DomainError):
+    pass
