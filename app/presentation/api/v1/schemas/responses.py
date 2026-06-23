@@ -24,8 +24,12 @@ class MessageSendResponse(BaseResponse):
 
 class MessageToSend(BaseModel):
     text: str
-    spender: str
+    sender: str
     created_at: datetime.datetime
 
 class UserInfoResponse(BaseResponse):
     info: dict
+
+class ChatLatestMessages(BaseResponse):
+    messages: list[dict]
+

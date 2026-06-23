@@ -44,6 +44,7 @@ def setup_kafka_logger(producer: KafkaProducer):
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
     asyncio.create_task(connection_manager.init_listening())
+
     await database.init_database()
 
     producer = KafkaProducer()

@@ -28,8 +28,8 @@ class MessagesCache:
         self._redis = redis_
         self._pipeline = self._redis.pipeline(transaction=False)
 
-    async def get_last_messages(self, chat: Chat):
-        messages_keys = await self._redis.zrevrange(name=f'chat:{chat.id}:messages', start=0, end=-1)
+    async def get_last_messages_by_chat_id(self, chat_id: int):
+        messages_keys = await self._redis.zrevrange(name=f'chat:{chat_id}:messages', start=0, end=-1)
         for message_key in messages_keys:
             self._pipeline.hgetall(name=message_key)
         messages_data = await self._pipeline.execute()

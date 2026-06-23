@@ -1,7 +1,7 @@
 from app.domain.base.entity import BaseEntity
 from app.domain.user.entities import User
 from app.domain.chat.value_objects import ChatName, ChatType
-from app.domain.chat.exceptions import UserAlreadyAdded, IncorrectChatMembers
+from app.domain.chat.exceptions import ChatAccessDenied, IncorrectChatMembers
 
 from dataclasses import dataclass, field
 
@@ -62,9 +62,17 @@ class Chat(BaseEntity):
     def add_members(self, members: set[User]):
         existing_users = {member.user for member in self.members}
         if existing_users & members:
-            raise UserAlreadyAdded("User already member")
+            raise ChatAccessDenied("User already a member")
         for member in members:
             ChatMember.create(member, self)
+
+    def has_member(self, user: User) -> bool:
+        return any(user == member.user for member in self.members)
+
+    def check_member(self, user: User) -> bool:
+        if not self.has_member(user):
+            raise ChatAccessDenied("User isn't member of the chat")
+        return True
 
     @staticmethod
     def create(name_: str, members_: set[User], type_: ChatType):

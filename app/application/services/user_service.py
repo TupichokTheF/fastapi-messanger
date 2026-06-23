@@ -1,5 +1,4 @@
-from app.infrastructure.adapters.repositories import UserRepository
-from app.domain.user import User
+from app.domain.user import AbstractUserRepository
 from app.application.dtos.user_dto import UserSignUpDTO
 
 

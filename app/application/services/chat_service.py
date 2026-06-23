@@ -1,14 +1,16 @@
-from app.infrastructure.adapters.repositories import UserRepository, ChatRepository
 from app.infrastructure.cache import ChatCache
-from app.domain.user import User
-from app.domain.chat import Chat, ChatType, DirectChat
+from app.domain.user import AbstractUserRepository
+from app.domain.chat import Chat, ChatType, DirectChat, AbstractChatRepository
 from app.application.services.exceptions import NotFoundError, InvalidUsername, AlreadyExistError
-from app.application.dtos import UserDTO
+from app.application.dtos import UserDTO, ChatDTO
 
 
 class ChatService:
 
-    def __init__(self, user_repo_: UserRepository, chat_repo_: ChatRepository, chat_cache_: ChatCache):
+    def __init__(self,
+                 user_repo_: AbstractUserRepository,
+                 chat_repo_: AbstractChatRepository,
+                 chat_cache_: ChatCache):
         self._user_repo = user_repo_
         self._chat_repo = chat_repo_
         self._chat_cache = chat_cache_
@@ -23,7 +25,8 @@ class ChatService:
 
         if direct_chat := await self._chat_repo.get_direct_chat_by_members(first_member, second_member):
             async with self._chat_cache as pipe:
-                pipe.update_chat_score(user.id, direct_chat.chat)
+                score = int(direct_chat.chat.created_at.timestamp() * 1000)
+                pipe.update_chat_score(user.id, direct_chat.chat, score)
             raise AlreadyExistError("Direct chat with those members already exist")
 
         chat = Chat.create(user.username, {first_member, second_member}, ChatType.DIRECT)
@@ -31,19 +34,28 @@ class ChatService:
 
         await self._chat_repo.add_direct_chat(direct_chat)
         async with self._chat_cache as pipe:
-            pipe.update_user_chats(chat)
-            pipe.update_chat_score(second_member.id, chat)
+            score = int(chat.created_at.timestamp() * 1000)
+            pipe.update_list_of_user_chats(chat)
+            pipe.update_chat_score(second_member.id, chat, score)
 
         return chat.id
 
-    async def get_chats(self, user: UserDTO) -> list[dict]:
+    async def get_user_chats_by_id(self, user: UserDTO) -> list[dict]:
         chat_ids = await self._chat_cache.get_chat_ids(user.id)
         if not chat_ids:
-            chats = await self._chat_repo.get_chats(user.id)
-            chat_ids = [c.chat_id for c in chats]
+            chats = await self._chat_repo.get_chats_by_user_id(user.id)
+            chat_ids = [c.id for c in chats]
             async with self._chat_cache as pipe:
                 for chat in chats:
-                    pipe.update_chat_score(user.id, chat)
+                    score = int(chat.created_at.timestamp() * 1000)
+                    pipe.update_chat_score(user.id, chat, score)
         user_chats = await self._chat_cache.get_chats_previews(chat_ids)
         return user_chats
+
+    async def get_chat_by_id(self, chat_id: int) -> ChatDTO:
+        chat = await self._chat_repo.get_chat_by_id(chat_id)
+        if not chat:
+            raise NotFoundError("Chat with that id wasn't found")
+
+        return ChatDTO.from_entity(chat)
 
