@@ -1,14 +1,13 @@
-import asyncio
-
 from contextlib import asynccontextmanager
 
 from aiokafka.admin import AIOKafkaAdminClient, NewTopic
 from aiokafka.errors import TopicAlreadyExistsError
 
+from app.core.settings import settings
 
 @asynccontextmanager
 async def kafka_admin():
-    admin = AIOKafkaAdminClient(bootstrap_servers="localhost:9092")
+    admin = AIOKafkaAdminClient(bootstrap_servers=settings.KAFKA_SERVER)
     await admin.start()
     try:
         yield admin
@@ -32,14 +31,5 @@ async def create_topic(admin: AIOKafkaAdminClient):
 async def describe_topics_information(topics: list[str], admin: AIOKafkaAdminClient):
     info = await admin.describe_topics(list(topics))
     print(info)
-
-
-async def main():
-    async with kafka_admin() as admin:
-        await create_topic(admin)
-        await describe_topics_information(['app_logs'], admin)
-
-if __name__ == "__main__":
-    asyncio.run(main())
 
 

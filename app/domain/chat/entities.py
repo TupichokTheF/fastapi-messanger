@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 
 @dataclass(kw_only=True, eq=False)
 class ChatMember:
-    _chat: "Chat"
     _member: User
+    _chat: "Chat"
     _created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
@@ -28,12 +28,11 @@ class ChatMember:
 
     def __eq__(self, other):
         if not isinstance(other, ChatMember):
-            raise NotImplemented
+            return NotImplemented
         return hash(self) == hash(other)
 
     def __hash__(self):
-        hash_items = (self._member, self._chat)
-        return hash(hash_items)
+        return hash(self._member)
 
 
 @dataclass(kw_only=True, eq=False)
@@ -64,7 +63,8 @@ class Chat(BaseEntity):
         if existing_users & members:
             raise ChatAccessDenied("User already a member")
         for member in members:
-            ChatMember.create(member, self)
+            chat_member = ChatMember.create(member, self)
+            self.members.add(chat_member)
 
     def has_member(self, user: User) -> bool:
         return any(user == member.user for member in self.members)
