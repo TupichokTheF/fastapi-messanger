@@ -38,4 +38,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRES: timedelta = timedelta(minutes=15)
     REFRESH_TOKEN_EXPIRES: timedelta = timedelta(days=1)
 
+    KAFKA_HOST: str = ""
+    KAFKA_PORT: int = 9092
+
+    @property
+    def KAFKA_SERVER(self):
+        return f"{self.KAFKA_HOST}:{self.KAFKA_PORT}"
+
 settings = Settings()

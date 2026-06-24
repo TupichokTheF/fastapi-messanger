@@ -58,13 +58,3 @@ class ChatCache:
         else:
             await self._pipeline.reset()
         return False
-
-
-async def main():
-    redis = ChatCache(Redis(decode_responses=True))
-    data = await redis.get_chats_previews([1])
-
-    print(data)
-
-if __name__ == "__main__":
-    asyncio.run(main())

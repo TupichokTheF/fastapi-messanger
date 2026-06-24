@@ -20,7 +20,7 @@ class ChatRepository(AbstractChatRepository):
         chat_ids = await self._session.execute(get_chat_ids_query)
         chat_ids = chat_ids.scalars().all()
 
-        chats = [self.get_chat_by_id(chat_id) for chat_id in chat_ids]
+        chats = [await self.get_chat_by_id(chat_id) for chat_id in chat_ids]
         return chats
 
     async def get_chat_by_id(self, chat_id: int):
