@@ -28,11 +28,11 @@ class UserPassword(BaseValueObject):
     @classmethod
     def create(cls, raw_password: str):
         if raw_password.upper() == raw_password:
-            raise ValidationError(f'Требуется хотя бы одна буква в нижнем регистре: {raw_password}')
+            raise ValidationError(f'Требуется хотя бы одна буква в нижнем регистре')
         if raw_password.lower() == raw_password:
-            raise ValidationError(f'Требуется хотя бы одна буква в верхнем регистре: {raw_password}')
+            raise ValidationError(f'Требуется хотя бы одна буква в верхнем регистре')
         if not any(symbol.isdigit() for symbol in raw_password):
-            raise ValidationError(f'Требуется хотя бы одна цифра: {raw_password}')
+            raise ValidationError(f'Требуется хотя бы одна цифра')
 
         hashed_password = hashpw(raw_password.encode("utf-8"), gensalt()).decode("utf-8")
         return cls(hashed_password)

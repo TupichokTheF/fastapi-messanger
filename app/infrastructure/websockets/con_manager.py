@@ -2,10 +2,11 @@ from fastapi import WebSocket
 
 from datetime import datetime
 from collections import defaultdict
-import json
+import json, logging, asyncio
 
 from app.infrastructure.database.redis.conn import RedisCon
 
+logger = logging.getLogger("chat_app")
 
 class ConnectionManager:
 
@@ -24,7 +25,8 @@ class ConnectionManager:
                         data = json.loads(message["data"])
                         await self._send_message(data)
             except Exception as e:
-                continue
+                logger.exception("Redis pub/sub connection failed, retrying")
+                await asyncio.sleep(3)
 
     async def _send_message(self, data: dict):
         users = self._chat_users[int(data["chat_id"])]

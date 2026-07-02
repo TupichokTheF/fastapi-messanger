@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, Cookie
+from fastapi import APIRouter, WebSocket, Cookie, WebSocketDisconnect
 
 from app.presentation.api.v1.dependencies import AuthorizationWsDep, ConManagerDep, MessageServiceDep
 from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse, MessageToSend
@@ -30,7 +30,7 @@ async def websocket_endpoint(websocket: WebSocket,
             await websocket.send_json(MessageSendResponse(succeed=True,
                                                           detail="Message send",
                                                           created_at=message.created_at).model_dump(mode="json"))
-    except Exception as e:
+    except WebSocketDisconnect:
         pass
     finally:
         await con_manager.disconnect(current_user.id, websocket)

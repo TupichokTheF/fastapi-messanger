@@ -30,7 +30,6 @@ class ChatService:
             raise AlreadyExistError("Direct chat with those members already exist")
 
         chat = Chat.create(user.username, {first_member, second_member}, ChatType.DIRECT)
-        print(chat.members)
         direct_chat = DirectChat.create(chat=chat, first_user=first_member, second_user=second_member)
 
         await self._chat_repo.add_direct_chat(direct_chat)

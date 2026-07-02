@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 
 from app.presentation.api.v1.dependencies import AuthServiceDep, ChatServiceDep
-from app.application.services.exceptions import NotFoundError
+from app.application.services.exceptions import NotFoundError, WrongTokenError
 from app.application.dtos import UserDTO, ChatDTO
 
 
@@ -22,7 +22,7 @@ async def get_current_user(auth_service: AuthServiceDep,
                            refresh_token: str = Cookie()) -> UserDTO | None:
     try:
         return await auth_service.get_active_user(access_token, refresh_token)
-    except:
+    except (WrongTokenError, NotFoundError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect access token",
