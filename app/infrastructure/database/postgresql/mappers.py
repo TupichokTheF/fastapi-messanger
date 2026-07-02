@@ -56,7 +56,7 @@ message_table = Table(
     metadata,
     Column('id', Integer, primary_key=True),
     Column("chat_id", Integer, ForeignKey("chats.id"), nullable=False),
-    Column("spender_id", Integer, ForeignKey("users.id"), nullable=False),
+    Column("sender_id", Integer, ForeignKey("users.id"), nullable=False),
     Column("text", String, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
 )
@@ -130,7 +130,7 @@ def init_message_tables():
         properties={
             "col_text": message_table.c.text,
             "_chat": relationship(Chat, lazy="joined"),
-            "_spender": relationship(User, lazy="joined"),
+            "_sender": relationship(User, lazy="joined"),
             "_created_at": message_table.c.created_at,
             "_text": composite(MessageText, "col_text"),
         }

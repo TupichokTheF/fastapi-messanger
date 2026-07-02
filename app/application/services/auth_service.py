@@ -1,14 +1,16 @@
-from app.infrastructure.adapters.repositories import UserRepository
 from app.infrastructure.cache import TokenCache
 from app.application.services.exceptions import WrongTokenError, NotFoundError, WrongPasswordError
 from app.application.services.jwt_service import JWTService
 from app.application.dtos import UserDTO
-from app.domain.user import User
+from app.domain.user import User, AbstractUserRepository
 
 
 class AuthService:
 
-    def __init__(self, user_repo: UserRepository, token_cache: TokenCache, jwt_service: JWTService):
+    def __init__(self,
+                 user_repo: AbstractUserRepository,
+                 token_cache: TokenCache,
+                 jwt_service: JWTService):
         self._user_repo = user_repo
         self._token_cache = token_cache
         self._jwt_service = jwt_service
@@ -28,9 +30,7 @@ class AuthService:
         return UserDTO.from_entity(user)
 
     async def _check_if_user_logout(self, refresh_token: str) -> bool:
-        if not await self._token_cache.get_username_by_refresh_token(refresh_token):
-            return True
-        return False
+        return not await self._token_cache.get_username_by_refresh_token(refresh_token)
 
     async def _get_user_by_token(self, access_token: str) -> User:
         username = self._jwt_service.get_username_by_access_token(access_token)

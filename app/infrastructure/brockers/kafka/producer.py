@@ -2,10 +2,12 @@ from aiokafka.producer import AIOKafkaProducer
 
 import json, asyncio
 
+from app.core.settings import settings
+
 class KafkaProducer:
 
     def __init__(self):
-        self._producer = AIOKafkaProducer(bootstrap_servers="localhost:9092",
+        self._producer = AIOKafkaProducer(bootstrap_servers=settings.KAFKA_SERVER,
                                 client_id='log_producer_1',
                                 acks='all',
                                 linger_ms=100,
@@ -19,12 +21,3 @@ class KafkaProducer:
 
     async def send_message(self, topic_name: str, message_data: dict):
         await self._producer.send(topic_name, message_data)
-
-async def main():
-    producer = KafkaProducer()
-    await producer.start()
-    print(await producer.send_message("app_logs", {"data": "test_message"}))
-    await producer.stop()
-
-if __name__ == "__main__":
-    asyncio.run(main())

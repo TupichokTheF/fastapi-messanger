@@ -5,3 +5,6 @@ class ValidationError(DomainError):
 
 class InvalidArgument(DomainError):
     pass
+
+class ChatAccessDenied(DomainError):
+    pass

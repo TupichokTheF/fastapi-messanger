@@ -1,9 +1,10 @@
 import pytest
 
-from app.domain.chat import ChatMember, ChatName
+from app.domain.chat import ChatMember, ChatName, ChatType, Chat
+from app.domain.user import User
 from app.domain.chat.exceptions import IncorrectNameError, IncorrectChatMembers
 
-from tests.units.utils import create_chat, create_user
+from collections.abc import Callable
 
 class TestChatName:
 
@@ -15,21 +16,26 @@ class TestChatName:
 
 class TestChat:
 
-    @pytest.mark.parametrize("chat_name, chat_type, members", [
-        ("test_chat_1", "direct", []),
-        ("test_chat_2", "direct", ["user_1", "user_2", "user_3"])
+    @pytest.mark.parametrize("chat_name, members", [
+        ("test_chat_1", []),
+        ("test_chat_2", ["user_1", "user_2", "user_3"])
     ])
-    def test_creation_of_chat(self, chat_name: str, chat_type: str, members: list[str]):
-        members = {create_user(username, '1Q2w3e', 'm@m.ru', key) for key, username in enumerate(members)}
+    def test_creation_of_direct_chat(self, chat_name: str,
+                                     members: list[str],
+                                     user_maker: Callable[[str, str, str, int], User],
+                                     chat_maker: Callable[[str, set[User], ChatType, int], Chat]):
+        members = {user_maker(username, '1Q2w3e', 'm@m.ru', key) for key, username in enumerate(members)}
         with pytest.raises(IncorrectChatMembers):
-            create_chat(chat_name, chat_type, members)
+            chat_maker(chat_name, members, ChatType.DIRECT, 1)
 
 
-    def test_add_members(self):
-        first_user = create_user("user_1", "1Q2w3e", "m@mail.ru", 1)
-        second_user = create_user("user_2", "1Q2w3e", "s@mail.ru", 2)
+    def test_add_members_to_direct_chat(self,
+                                        user_maker: Callable[[str, str, str, int], User],
+                                        chat_maker: Callable[[str, set[User], ChatType, int], Chat]):
+        first_user = user_maker("user_1", "1Q2w3e", "m@mail.ru", 1)
+        second_user = user_maker("user_2", "1Q2w3e", "s@mail.ru", 2)
         members = {first_user, second_user}
-        chat = create_chat("test_chat", "DIRECT", members)
+        chat = chat_maker("test_chat", members, ChatType.DIRECT, 1)
 
         chat_members = set()
         for member in members:
