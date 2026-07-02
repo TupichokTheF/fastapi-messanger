@@ -31,7 +31,7 @@ async def create_topic(admin: AIOKafkaAdminClient):
 
 async def describe_topics_information(topics: list[str], admin: AIOKafkaAdminClient):
     info = await admin.describe_topics(list(topics))
-    print(info)
+    return info
 
 
 async def main():

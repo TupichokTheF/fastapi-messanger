@@ -33,12 +33,7 @@ class AuthService:
         return False
 
     async def _get_user_by_token(self, access_token: str) -> User:
-        try:
-            username = self._jwt_service.get_username_by_access_token(access_token)
-            if username is None:
-                raise WrongTokenError("Invalid username")
-        except WrongTokenError as exc:
-            raise exc
+        username = self._jwt_service.get_username_by_access_token(access_token)
         user = await self._user_repo.get_user_by_username(username)
         if user is None:
             raise NotFoundError("User not found by username")

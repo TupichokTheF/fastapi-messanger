@@ -72,15 +72,4 @@ class ConnectionManager:
     def active_connections(self):
         return self._active_connections
 
-import asyncio
-
 connection_manager = ConnectionManager()
-
-async def main():
-    asyncio.create_task(connection_manager.init_listening())
-    await asyncio.sleep(0.3)
-    await connection_manager.test(3)
-    await connection_manager.publish_message({"chat_id": 3, "user_id": "maxim"})
-
-if __name__ == '__main__':
-    asyncio.run(main())
