@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter
 
 from app.presentation.api.v1.dependencies import AuthorizationDep, MessageServiceDep, ChatDep
 from app.presentation.api.v1.schemas.responses import ChatLatestMessages

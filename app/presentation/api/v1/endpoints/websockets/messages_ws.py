@@ -1,7 +1,7 @@
 from fastapi import APIRouter, WebSocket, Cookie, WebSocketDisconnect
 
 from app.presentation.api.v1.dependencies import AuthorizationWsDep, ConManagerDep, MessageServiceDep
-from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse, MessageToSend
+from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse
 from app.application.services.exceptions import NotFoundError
 from app.domain.message.exceptions import EmptyMessage
 

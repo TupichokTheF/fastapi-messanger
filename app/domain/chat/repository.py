@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 
-from app.domain.chat import DirectChat, Chat, ChatMember
+from app.domain.chat import DirectChat, Chat
 from app.domain.user import User
 
 

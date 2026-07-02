@@ -1,13 +1,13 @@
-import pytest
+from app.application.dtos import UserSignUpDTO
+from app.domain.user import User
 
-from ..utils import create_user
+from collections.abc import Callable
 
-from app.application.dtos import UserDTO, UserSignUpDTO
 
 class TestUserDTO:
 
-    def test_creation_from_entity(self):
-        first_user = create_user("test_username", "1Q2w3e", "m@mail.ru", 1)
+    def test_creation_from_entity(self, user_maker: Callable[[str, str, str, int], User]):
+        first_user = user_maker("test_username", "1Q2w3e", "m@mail.ru", 1)
         user_signup_dto = UserSignUpDTO.from_entity(first_user)
         expected_fields = {"username", "password", "email", "id"}
 

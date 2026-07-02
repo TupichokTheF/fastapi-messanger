@@ -2,7 +2,7 @@ from redis.asyncio import Redis
 from redis.asyncio.client import Pipeline
 
 from app.domain.message import Message
-from app.domain.chat import Chat
+
 
 class MessageCachePipe:
 

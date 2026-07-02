@@ -3,7 +3,8 @@ from app.domain.chat import Chat, ChatType
 from app.domain.message import Message
 from app.infrastructure.cache import MessagesCache
 
-import pytest, pytest_asyncio
+import pytest
+import pytest_asyncio
 
 from collections.abc import Callable
 from redis.asyncio import Redis, ConnectionPool

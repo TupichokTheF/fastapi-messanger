@@ -1,5 +1,5 @@
 from app.domain.user import User, AbstractUserRepository
-from app.domain.user.value_objects import UserPassword, UserEmail, UserUsername
+from app.domain.user.value_objects import UserUsername
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

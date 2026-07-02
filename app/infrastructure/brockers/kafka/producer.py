@@ -1,6 +1,6 @@
 from aiokafka.producer import AIOKafkaProducer
 
-import json, asyncio
+import json
 
 from app.core.settings import settings
 

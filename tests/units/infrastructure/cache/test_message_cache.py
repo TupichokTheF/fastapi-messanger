@@ -1,9 +1,4 @@
-from app.infrastructure.cache import MessagesCache
 from app.domain.message import Message
-from app.domain.chat import Chat, ChatType
-from app.domain.user import User
-
-import pytest
 
 from collections.abc import Callable
 

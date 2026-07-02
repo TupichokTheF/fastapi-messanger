@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response, HTTPException, status, Cookie
 
 from app.presentation.api.v1.dependencies import UserServiceDep, AuthServiceDep, JWTServiceDep
-from app.application.services.exceptions import NotFoundError
+from app.application.services.exceptions import NotFoundError, WrongPasswordError
 from app.application.dtos.user_dto import UserSignUpDTO
 from app.presentation.api.v1.schemas.user_schema import UserSignUp, UserSignIn
 from app.presentation.api.v1.schemas.auth_schema import AccessToken
@@ -30,7 +30,7 @@ async def create_user(user_service: UserServiceDep, user_data: UserSignUp):
 async def authenticate_user(auth_service: AuthServiceDep, jwt_service: JWTServiceDep, user_data: UserSignIn, response: Response):
     try:
         user = await auth_service.authenticate_user(user_data.username, user_data.password)
-    except Exception:
+    except (NotFoundError, WrongPasswordError):
         logger.warning(f"Failed authorization | username={user_data.username}", extra={"username": user_data.username})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

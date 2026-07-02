@@ -1,1 +1,3 @@
 from app.presentation.api.v1.endpoints.websockets.messages_ws import messages_ws
+
+__all__ = ['messages_ws']

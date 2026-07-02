@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime, Enum
+from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime, Enum, UniqueConstraint
 from sqlalchemy.orm import registry, composite, relationship
 
 from app.domain.user import User, UserEmail, UserPassword, UserUsername
@@ -47,8 +47,9 @@ direct_chat = Table(
     "direct_chats",
     metadata,
     Column("chat_id", Integer, ForeignKey("chats.id"), primary_key = True, nullable=False),
-    Column("first_user_id", Integer, ForeignKey("users.id"), primary_key=True, nullable=False),
-    Column("second_user_id", Integer, ForeignKey("users.id"), primary_key=True, nullable=False),
+    Column("first_user_id", Integer, ForeignKey("users.id"), nullable=False),
+    Column("second_user_id", Integer, ForeignKey("users.id"), nullable=False),
+    UniqueConstraint("first_user_id", "second_user_id", name="uq_direct_chat_members")
 )
 
 message_table = Table(

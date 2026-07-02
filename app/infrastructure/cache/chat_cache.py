@@ -3,9 +3,7 @@ from redis.client import Pipeline
 
 from app.domain.chat import Chat, ChatType
 from app.domain.message import Message
-from app.domain.user import User
 
-import asyncio
 
 class ChatCachePipeline:
 

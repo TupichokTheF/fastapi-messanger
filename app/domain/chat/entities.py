@@ -34,6 +34,11 @@ class ChatMember:
     def __hash__(self):
         return hash(self._member)
 
+    def __lt__(self, other):
+        if not isinstance(other, ChatMember):
+            return NotImplemented
+        return self.user < other.user
+
 
 @dataclass(kw_only=True, eq=False)
 class Chat(BaseEntity):
@@ -56,7 +61,8 @@ class Chat(BaseEntity):
 
     @property
     def members(self):
-        return self._members
+        members_ = sorted(list(self._members))
+        return members_
 
     def add_members(self, members: set[User]):
         existing_users = {member.user for member in self.members}
@@ -64,7 +70,7 @@ class Chat(BaseEntity):
             raise ChatAccessDenied("User already a member")
         for member in members:
             chat_member = ChatMember.create(member, self)
-            self.members.add(chat_member)
+            self._members.add(chat_member)
 
     def has_member(self, user: User) -> bool:
         return any(user == member.user for member in self.members)

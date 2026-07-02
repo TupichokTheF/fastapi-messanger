@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Body, HTTPException, status
 
+from app.application.services.exceptions import NotFoundError, InvalidUsername
 from app.presentation.api.v1.dependencies.domain_dep import AuthorizationDep
 from app.presentation.api.v1.dependencies import ChatServiceDep
 from app.presentation.api.v1.schemas.responses import AddedToChatResponse, UserChatsResponse
@@ -18,7 +19,7 @@ logger = logging.getLogger("chat_app")
 async def add_user_to_contact(current_user: AuthorizationDep, chat_service: ChatServiceDep, contact_username: str = Body(embed=True)):
     try:
         chat_id = await chat_service.add_to_direct_chat(current_user, contact_username)
-    except Exception as e:
+    except (NotFoundError, InvalidUsername) as e:
         logger.warning(f"Failed to create direct chat | first_username={current_user.username}, second_username={contact_username}",
                        extra={"first_username": current_user.username, "second_username": contact_username})
         raise HTTPException(

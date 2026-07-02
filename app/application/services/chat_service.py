@@ -1,7 +1,7 @@
 from app.infrastructure.cache import ChatCache
 from app.domain.user import AbstractUserRepository
 from app.domain.chat import Chat, ChatType, DirectChat, AbstractChatRepository
-from app.application.services.exceptions import NotFoundError, InvalidUsername, AlreadyExistError
+from app.application.services.exceptions import NotFoundError, InvalidUsername
 from app.application.dtos import UserDTO, ChatDTO
 
 
@@ -18,25 +18,20 @@ class ChatService:
     async def add_to_direct_chat(self, user: UserDTO, contact_username: str) -> int:
         if contact_username == user.username:
             raise InvalidUsername("Invalid username to add")
-        first_member = await self._user_repo.get_user_by_username(contact_username)
-        if not first_member:
+        contact = await self._user_repo.get_user_by_username(contact_username)
+        if not contact:
             raise NotFoundError("Incorrect contact username")
-        second_member = await self._user_repo.get_user_by_username(user.username)
+        current_user = await self._user_repo.get_user_by_username(user.username)
 
-        if direct_chat := await self._chat_repo.get_direct_chat_by_members(first_member, second_member):
-            async with self._chat_cache as pipe:
-                score = int(direct_chat.chat.created_at.timestamp() * 1000)
-                pipe.update_chat_score(user.id, direct_chat.chat, score)
-            raise AlreadyExistError("Direct chat with those members already exist")
-
-        chat = Chat.create(user.username, {first_member, second_member}, ChatType.DIRECT)
-        direct_chat = DirectChat.create(chat=chat, first_user=first_member, second_user=second_member)
+        chat = Chat.create(user.username, {contact, current_user}, ChatType.DIRECT)
+        direct_chat = DirectChat.create(chat=chat, first_user=contact, second_user=current_user)
 
         await self._chat_repo.add_direct_chat(direct_chat)
+
         async with self._chat_cache as pipe:
             score = int(chat.created_at.timestamp() * 1000)
             pipe.update_list_of_user_chats(chat)
-            pipe.update_chat_score(second_member.id, chat, score)
+            pipe.update_chat_score(current_user.id, chat, score)
 
         return chat.id
 

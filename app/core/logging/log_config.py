@@ -1,5 +1,6 @@
 import json
-import logging, logging.config
+import logging
+import logging.config
 
 from abc import ABC, abstractmethod
 

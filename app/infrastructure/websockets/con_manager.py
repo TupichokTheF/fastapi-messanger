@@ -2,7 +2,9 @@ from fastapi import WebSocket
 
 from datetime import datetime
 from collections import defaultdict
-import json, logging, asyncio
+import json
+import logging
+import asyncio
 
 from app.infrastructure.database.redis.conn import RedisCon
 
@@ -24,7 +26,7 @@ class ConnectionManager:
                     if message["type"] == "message":
                         data = json.loads(message["data"])
                         await self._send_message(data)
-            except Exception as e:
+            except Exception:
                 logger.exception("Redis pub/sub connection failed, retrying")
                 await asyncio.sleep(3)
 
@@ -50,7 +52,7 @@ class ConnectionManager:
 
     async def connect(self, chat_id: int, user_id: int, web_socket: WebSocket):
         await web_socket.accept()
-        if not chat_id in self._chat_users:
+        if chat_id not in self._chat_users:
             await self._pubsub.subscribe(f"chat:{chat_id}")
         self._chat_users[chat_id].add(user_id)
         self._active_connections[user_id].add(web_socket)

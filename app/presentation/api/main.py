@@ -3,7 +3,8 @@ import logging
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn, asyncio
+import uvicorn
+import asyncio
 from contextlib import asynccontextmanager
 
 from app.core.logging.log_config import Logger

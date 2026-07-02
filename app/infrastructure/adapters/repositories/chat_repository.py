@@ -1,7 +1,9 @@
 from app.domain.chat import Chat, ChatMember, DirectChat, AbstractChatRepository
+from app.domain.chat.exceptions import ChatAlreadyExist
 from app.domain.user import User
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -12,7 +14,11 @@ class ChatRepository(AbstractChatRepository):
 
     async def add_direct_chat(self, direct_chat: DirectChat) -> bool:
         self._session.add(direct_chat)
-        await self._session.commit()
+        try:
+            await self._session.commit()
+        except IntegrityError:
+            raise ChatAlreadyExist("Direct chat with that users already exist")
+
         return True
 
     async def get_chats_by_user_id(self, user_id: int):

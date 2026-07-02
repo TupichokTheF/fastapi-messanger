@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from app.domain.chat import Chat, ChatType, ChatMember
-from app.domain.user import User
 
 
 @dataclass(kw_only=True)

@@ -72,7 +72,7 @@ class TestUser:
     def test_password_verification(self, user_maker: Callable[[str, str, str, int], User]):
         user_1 = user_maker("ssdadwad", "1Q2w3e", "dasd@mail.ru", 1)
 
-        assert user_1.verify_password("") == False
-        assert user_1.verify_password("sad") == False
+        assert not user_1.verify_password("")
+        assert not user_1.verify_password("sad")
         assert user_1.verify_password("1Q2w3e")
 

@@ -3,3 +3,5 @@ from app.application.services.jwt_service import JWTService
 from app.application.services.user_service import UserService
 from app.application.services.message_service import MessageService
 from app.application.services.chat_service import ChatService
+
+__all__ = ['AuthService', 'JWTService', 'UserService', 'MessageService', 'ChatService']

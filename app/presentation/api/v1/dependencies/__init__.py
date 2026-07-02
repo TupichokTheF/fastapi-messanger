@@ -4,3 +4,7 @@ from app.presentation.api.v1.dependencies.repositories_deps import UserRepositor
 from app.presentation.api.v1.dependencies.cache_deps import TokenCacheDep, ChatCacheDep
 from app.presentation.api.v1.dependencies.services_deps import AuthServiceDep, UserServiceDep, JWTServiceDep, ChatServiceDep, MessageServiceDep
 from app.presentation.api.v1.dependencies.domain_dep import AuthorizationWsDep, AuthorizationDep, ChatDep
+
+__all__ = ['ConManagerDep', 'SessionDep', 'RedisDep', 'UserRepositoryDep', 'MessageRepoDep', 'ChatRepoDep',
+           'TokenCacheDep', 'ChatCacheDep', 'AuthServiceDep', 'UserServiceDep', 'JWTServiceDep', 'ChatServiceDep',
+           'MessageServiceDep', 'AuthorizationDep', 'AuthorizationWsDep', 'ChatDep']

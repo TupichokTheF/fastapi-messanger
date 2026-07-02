@@ -12,3 +12,6 @@ class IncorrectChatMembers(DomainError):
 
 class ChatAccessDenied(DomainError):
     pass
+
+class ChatAlreadyExist(DomainError):
+    pass
