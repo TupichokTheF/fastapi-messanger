@@ -1,8 +1,9 @@
-from app.infrastructure.cache import TokenCache, ChatCache, MessagesCache
-from app.presentation.api.v1.dependencies import RedisDep
+from typing import Annotated
 
 from fastapi import Depends
-from typing import Annotated
+
+from app.infrastructure.cache import ChatCache, MessagesCache, TokenCache
+from app.presentation.api.v1.dependencies.session_dep import RedisDep
 
 
 def get_token_cache(redis: RedisDep):

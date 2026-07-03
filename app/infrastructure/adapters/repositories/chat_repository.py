@@ -1,10 +1,10 @@
-from app.domain.chat import Chat, ChatMember, DirectChat, AbstractChatRepository
-from app.domain.chat.exceptions import ChatAlreadyExist
-from app.domain.user import User
-
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.chat import AbstractChatRepository, Chat, ChatMember, DirectChat
+from app.domain.chat.exceptions import ChatAlreadyExist
+from app.domain.user import User
 
 
 class ChatRepository(AbstractChatRepository):

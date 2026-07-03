@@ -1,8 +1,14 @@
-from app.presentation.api.v1.dependencies import SessionDep
-from app.infrastructure.adapters.repositories import UserRepository, MessageRepository, ChatRepository
-
 from typing import Annotated
+
 from fastapi import Depends
+
+from app.infrastructure.adapters.repositories import (
+    ChatRepository,
+    MessageRepository,
+    UserRepository,
+)
+from app.presentation.api.v1.dependencies.session_dep import SessionDep
+
 
 def get_user_repository(session: SessionDep):
     return UserRepository(session)

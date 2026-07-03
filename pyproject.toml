@@ -63,3 +63,6 @@ dependencies = [
 testpaths = ["tests"]
 asyncio_mode="auto"
 pythonpath = ["."]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "BLE", "UP"]

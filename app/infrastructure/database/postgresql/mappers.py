@@ -1,10 +1,19 @@
-from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime, Enum, UniqueConstraint
-from sqlalchemy.orm import registry, composite, relationship
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import composite, registry, relationship
 
-from app.domain.user import User, UserEmail, UserPassword, UserUsername
-from app.domain.message import Message, MessageText
 from app.domain.chat import Chat, ChatMember, ChatName, ChatType, DirectChat
-
+from app.domain.message import Message, MessageText
+from app.domain.user import User, UserEmail, UserPassword, UserUsername
 
 mapper_registry = registry()
 metadata = MetaData()

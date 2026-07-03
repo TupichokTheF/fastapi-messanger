@@ -1,10 +1,10 @@
-from fastapi import WebSocket
-
-from datetime import datetime
-from collections import defaultdict
+import asyncio
 import json
 import logging
-import asyncio
+from collections import defaultdict
+from datetime import datetime
+
+from fastapi import WebSocket
 
 from app.infrastructure.database.redis.conn import RedisCon
 

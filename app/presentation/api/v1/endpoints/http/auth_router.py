@@ -1,14 +1,17 @@
-from fastapi import APIRouter, Response, HTTPException, status, Cookie
-
-from app.presentation.api.v1.dependencies import UserServiceDep, AuthServiceDep, JWTServiceDep
-from app.application.services.exceptions import NotFoundError, WrongPasswordError
-from app.application.dtos.user_dto import UserSignUpDTO
-from app.presentation.api.v1.schemas.user_schema import UserSignUp, UserSignIn
-from app.presentation.api.v1.schemas.auth_schema import AccessToken
-from app.presentation.api.v1.schemas.responses import SignUpResponse
-
 import logging
 
+from fastapi import APIRouter, Cookie, HTTPException, Response, status
+
+from app.application.dtos.user_dto import UserSignUpDTO
+from app.application.services.exceptions import NotFoundError, WrongPasswordError
+from app.presentation.api.v1.dependencies import (
+    AuthServiceDep,
+    JWTServiceDep,
+    UserServiceDep,
+)
+from app.presentation.api.v1.schemas.auth_schema import AccessToken
+from app.presentation.api.v1.schemas.responses import SignUpResponse
+from app.presentation.api.v1.schemas.user_schema import UserSignIn, UserSignUp
 
 auth_router = APIRouter(
     tags=["Auth endpoints"],

@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Body, HTTPException, status
-
-from app.application.services.exceptions import NotFoundError, InvalidUsername
-from app.presentation.api.v1.dependencies.domain_dep import AuthorizationDep
-from app.presentation.api.v1.dependencies import ChatServiceDep
-from app.presentation.api.v1.schemas.responses import AddedToChatResponse, UserChatsResponse
-
 import logging
 
+from fastapi import APIRouter, Body, HTTPException, status
+
+from app.application.services.exceptions import InvalidUsername, NotFoundError
+from app.presentation.api.v1.dependencies import ChatServiceDep
+from app.presentation.api.v1.dependencies.domain_dep import AuthorizationDep
+from app.presentation.api.v1.schemas.responses import (
+    AddedToChatResponse,
+    UserChatsResponse,
+)
 
 chat_router = APIRouter(
     prefix="/chat",

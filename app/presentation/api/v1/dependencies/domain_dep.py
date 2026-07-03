@@ -1,11 +1,11 @@
-from fastapi import Depends, Cookie, Query, HTTPException, status, Body
-from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 
-from app.presentation.api.v1.dependencies import AuthServiceDep, ChatServiceDep
-from app.application.services.exceptions import NotFoundError, WrongTokenError
-from app.application.dtos import UserDTO, ChatDTO
+from fastapi import Body, Cookie, Depends, HTTPException, Query, status
+from fastapi.security import OAuth2PasswordBearer
 
+from app.application.dtos import ChatDTO, UserDTO
+from app.application.services.exceptions import NotFoundError, WrongTokenError
+from app.presentation.api.v1.dependencies.services_deps import AuthServiceDep, ChatServiceDep
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/sign_in")
 

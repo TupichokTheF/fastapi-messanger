@@ -1,10 +1,11 @@
-from app.core.settings import settings
-from app.infrastructure.cache import TokenCache
-from app.application.services.exceptions import NotFoundError, WrongTokenError
+from datetime import UTC, datetime, timedelta
 
-from datetime import timedelta, timezone, datetime
 import jwt
 from jwt.exceptions import InvalidTokenError
+
+from app.application.services.exceptions import NotFoundError, WrongTokenError
+from app.core.settings import settings
+from app.infrastructure.cache import TokenCache
 
 
 class JWTService:
@@ -20,7 +21,7 @@ class JWTService:
 
     async def generate_token(self, data: dict, expires_delta: timedelta | None = settings.ACCESS_TOKEN_EXPIRES) -> str:
         to_encode = data.copy()
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGORITHM_OF_CIFER)
 

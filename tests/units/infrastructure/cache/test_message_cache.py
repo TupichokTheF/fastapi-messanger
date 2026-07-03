@@ -1,6 +1,6 @@
-from app.domain.message import Message
-
 from collections.abc import Callable
+
+from app.domain.message import Message
 
 
 class TestMessageCache:

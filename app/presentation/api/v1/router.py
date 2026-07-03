@@ -1,6 +1,11 @@
 from fastapi import APIRouter
 
-from app.presentation.api.v1.endpoints import auth_router, chat_router, messages_ws, user_router
+from app.presentation.api.v1.endpoints import (
+    auth_router,
+    chat_router,
+    messages_ws,
+    user_router,
+)
 
 api_router = APIRouter(
     prefix="/api/v1"

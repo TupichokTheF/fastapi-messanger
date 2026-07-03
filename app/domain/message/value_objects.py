@@ -1,7 +1,8 @@
+from dataclasses import dataclass
+
 from app.domain import BaseValueObject
 from app.domain.message.exceptions import EmptyMessage
 
-from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class MessageText(BaseValueObject):

@@ -1,8 +1,9 @@
-from aiokafka.producer import AIOKafkaProducer
-
 import json
 
+from aiokafka.producer import AIOKafkaProducer
+
 from app.core.settings import settings
+
 
 class KafkaProducer:
 

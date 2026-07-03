@@ -1,10 +1,11 @@
+from collections.abc import Callable
+
 import pytest
 
-from app.domain.chat import ChatMember, ChatName, ChatType, Chat
+from app.domain.chat import Chat, ChatMember, ChatName, ChatType
+from app.domain.chat.exceptions import IncorrectChatMembers, IncorrectNameError
 from app.domain.user import User
-from app.domain.chat.exceptions import IncorrectNameError, IncorrectChatMembers
 
-from collections.abc import Callable
 
 class TestChatName:
 

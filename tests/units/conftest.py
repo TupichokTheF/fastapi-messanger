@@ -1,13 +1,14 @@
-from app.domain.user import User
-from app.domain.chat import Chat, ChatType
-from app.domain.message import Message
-from app.infrastructure.cache import MessagesCache
+from collections.abc import Callable
 
 import pytest
 import pytest_asyncio
+from redis.asyncio import ConnectionPool, Redis
 
-from collections.abc import Callable
-from redis.asyncio import Redis, ConnectionPool
+from app.domain.chat import Chat, ChatType
+from app.domain.message import Message
+from app.domain.user import User
+from app.infrastructure.cache import MessagesCache
+
 
 @pytest.fixture()
 def user_maker() -> Callable[[str, str, str, int], User]:

@@ -1,9 +1,12 @@
-from app.infrastructure.cache import ChatCache
+from app.application.dtos import ChatDTO, UserDTO
+from app.application.services.exceptions import InvalidUsername, NotFoundError
+from app.domain.chat import AbstractChatRepository, Chat, ChatType, DirectChat
 from app.domain.user import AbstractUserRepository
-from app.domain.chat import Chat, ChatType, DirectChat, AbstractChatRepository
-from app.application.services.exceptions import NotFoundError, InvalidUsername
-from app.application.dtos import UserDTO, ChatDTO
+from app.infrastructure.cache import ChatCache
 
+import logging
+
+logger = logging.getLogger('chat_app')
 
 class ChatService:
 
@@ -37,13 +40,16 @@ class ChatService:
 
     async def get_user_chats_by_id(self, user: UserDTO) -> list[dict]:
         chat_ids = await self._chat_cache.get_chat_ids(user.id)
+
         if not chat_ids:
             chats = await self._chat_repo.get_chats_by_user_id(user.id)
             chat_ids = [c.id for c in chats]
+
             async with self._chat_cache as pipe:
                 for chat in chats:
                     score = int(chat.created_at.timestamp() * 1000)
                     pipe.update_chat_score(user.id, chat, score)
+
         user_chats = await self._chat_cache.get_chats_previews(chat_ids)
         return user_chats
 

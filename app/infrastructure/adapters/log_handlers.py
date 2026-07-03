@@ -1,6 +1,6 @@
-from app.core.logging.log_config import AbstractHandler
+from asyncio import AbstractEventLoop, Queue
 
-from asyncio import Queue, AbstractEventLoop
+from app.core.logging.log_config import AbstractHandler
 
 
 class KafkaHandler(AbstractHandler):

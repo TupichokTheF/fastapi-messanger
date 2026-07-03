@@ -1,18 +1,17 @@
-from app.domain.base.entity import BaseEntity
-from app.domain.user.entities import User
-from app.domain.chat.value_objects import ChatName, ChatType
-from app.domain.chat.exceptions import ChatAccessDenied, IncorrectChatMembers
-
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
-from datetime import datetime, timezone
+from app.domain.base.entity import BaseEntity
+from app.domain.chat.exceptions import ChatAccessDenied, IncorrectChatMembers
+from app.domain.chat.value_objects import ChatName, ChatType
+from app.domain.user.entities import User
 
 
 @dataclass(kw_only=True, eq=False)
 class ChatMember:
     _member: User
     _chat: "Chat"
-    _created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    _created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def user(self):
@@ -45,7 +44,7 @@ class Chat(BaseEntity):
     _name: ChatName
     _type: ChatType
     _members: set[ChatMember] = field(default_factory=set)
-    _created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    _created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def created_at(self):

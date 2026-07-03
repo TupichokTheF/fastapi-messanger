@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from app.domain.user import User
 
+
 class AbstractUserRepository(ABC):
 
     @abstractmethod

@@ -1,9 +1,13 @@
-from fastapi import APIRouter, WebSocket, Cookie, WebSocketDisconnect
+from fastapi import APIRouter, Cookie, WebSocket, WebSocketDisconnect
 
-from app.presentation.api.v1.dependencies import AuthorizationWsDep, ConManagerDep, MessageServiceDep
-from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse
 from app.application.services.exceptions import NotFoundError
 from app.domain.message.exceptions import EmptyMessage
+from app.presentation.api.v1.dependencies import (
+    AuthorizationWsDep,
+    ConManagerDep,
+    MessageServiceDep,
+)
+from app.presentation.api.v1.schemas import ErrorResponse, MessageSendResponse
 
 messages_ws = APIRouter(
     tags = ["Websocket operations with messages"],

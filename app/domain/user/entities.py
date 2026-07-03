@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from app.domain.base.entity import BaseEntity
-from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
-from app.domain.user.exceptions import InvalidArgument
-
 from bcrypt import checkpw
+
+from app.domain.base.entity import BaseEntity
+from app.domain.user.exceptions import InvalidArgument
+from app.domain.user.value_objects import UserEmail, UserPassword, UserUsername
 
 
 @dataclass(eq=False, kw_only=True)

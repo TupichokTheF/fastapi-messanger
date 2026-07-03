@@ -1,5 +1,5 @@
-from app.domain.user import AbstractUserRepository
 from app.application.dtos.user_dto import UserSignUpDTO
+from app.domain.user import AbstractUserRepository
 
 
 class UserService:

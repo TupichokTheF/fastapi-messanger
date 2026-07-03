@@ -1,7 +1,8 @@
-from pydantic import BaseModel
-from app.domain.user import User
-
 from datetime import datetime
+
+from pydantic import BaseModel
+
+from app.domain.user import User
 
 
 class MessageBase(BaseModel):

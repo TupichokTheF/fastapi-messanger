@@ -1,9 +1,9 @@
+from collections.abc import Callable
+
 import pytest
 
 from app.domain.user import User, UserEmail, UserUsername
-from app.domain.user.exceptions import ValidationError, InvalidArgument
-
-from collections.abc import Callable
+from app.domain.user.exceptions import InvalidArgument, ValidationError
 
 
 class TestUsername:

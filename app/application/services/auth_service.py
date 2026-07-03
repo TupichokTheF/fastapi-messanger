@@ -1,8 +1,12 @@
-from app.infrastructure.cache import TokenCache
-from app.application.services.exceptions import WrongTokenError, NotFoundError, WrongPasswordError
-from app.application.services.jwt_service import JWTService
 from app.application.dtos import UserDTO
-from app.domain.user import User, AbstractUserRepository
+from app.application.services.exceptions import (
+    NotFoundError,
+    WrongPasswordError,
+    WrongTokenError,
+)
+from app.application.services.jwt_service import JWTService
+from app.domain.user import AbstractUserRepository, User
+from app.infrastructure.cache import TokenCache
 
 
 class AuthService:

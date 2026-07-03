@@ -1,17 +1,18 @@
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+
 from app.domain import BaseEntity
-from app.domain.user import User
 from app.domain.chat import Chat
 from app.domain.message.value_objects import MessageText
+from app.domain.user import User
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
 
 @dataclass(kw_only=True, eq=False)
 class Message(BaseEntity):
     _sender: User
     _chat: Chat
     _text: MessageText
-    _created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    _created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def text(self):

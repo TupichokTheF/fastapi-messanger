@@ -1,6 +1,7 @@
-from redis.asyncio import Redis, ConnectionPool
+from redis.asyncio import ConnectionPool, Redis
 
 from app.core.settings import settings
+
 
 class RedisConnection:
 

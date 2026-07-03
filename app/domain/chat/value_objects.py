@@ -1,8 +1,8 @@
-from app.domain.base import BaseValueObject
-from app.domain.chat.exceptions import IncorrectNameError
-
 from dataclasses import dataclass
 from enum import StrEnum
+
+from app.domain.base import BaseValueObject
+from app.domain.chat.exceptions import IncorrectNameError
 
 
 @dataclass(frozen=True)

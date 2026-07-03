@@ -1,10 +1,10 @@
 import json
 import logging
 import logging.config
-
 from abc import ABC, abstractmethod
 
 from app.core.settings import settings
+
 
 class AbstractHandler(logging.Handler, ABC):
 
@@ -20,7 +20,7 @@ class Logger:
         self._logger = logging.getLogger('chat_app')
 
     def _setup_logging(self):
-        with open(self.PATH_TO_CONFIG, 'r') as config_file:
+        with open(self.PATH_TO_CONFIG) as config_file:
             config = json.load(config_file)
         logging.config.dictConfig(config)
 

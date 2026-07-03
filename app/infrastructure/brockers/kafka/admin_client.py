@@ -5,6 +5,7 @@ from aiokafka.errors import TopicAlreadyExistsError
 
 from app.core.settings import settings
 
+
 @asynccontextmanager
 async def kafka_admin():
     admin = AIOKafkaAdminClient(bootstrap_servers=settings.KAFKA_SERVER)

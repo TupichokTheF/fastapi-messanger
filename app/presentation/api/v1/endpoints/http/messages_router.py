@@ -1,9 +1,13 @@
+import logging
+
 from fastapi import APIRouter
 
-from app.presentation.api.v1.dependencies import AuthorizationDep, MessageServiceDep, ChatDep
+from app.presentation.api.v1.dependencies import (
+    AuthorizationDep,
+    ChatDep,
+    MessageServiceDep,
+)
 from app.presentation.api.v1.schemas.responses import ChatLatestMessages
-
-import logging
 
 messages_router = APIRouter(
     tags = ["HTTP operations with messages"],

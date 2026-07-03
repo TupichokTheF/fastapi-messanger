@@ -1,8 +1,9 @@
-from app.domain.user import User, AbstractUserRepository
-from app.domain.user.value_objects import UserUsername
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.user import AbstractUserRepository, User
+from app.domain.user.value_objects import UserUsername
+
 
 class UserRepository(AbstractUserRepository):
 

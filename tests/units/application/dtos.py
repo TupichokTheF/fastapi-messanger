@@ -1,7 +1,7 @@
+from collections.abc import Callable
+
 from app.application.dtos import UserSignUpDTO
 from app.domain.user import User
-
-from collections.abc import Callable
 
 
 class TestUserDTO:

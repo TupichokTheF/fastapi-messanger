@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 import re
-from bcrypt import hashpw, gensalt
+from dataclasses import dataclass
+
+from bcrypt import gensalt, hashpw
 
 from app.domain.base.value_object import BaseValueObject
 from app.domain.user.exceptions import ValidationError
