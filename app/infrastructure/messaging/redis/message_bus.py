@@ -1,3 +1,5 @@
+from typing import Any, AsyncGenerator
+
 from app.domain.base import BaseEvent
 from app.domain.message import MessageReceivedEvent
 from app.infrastructure.database.redis.conn import RedisCon
@@ -16,13 +18,13 @@ class MessageBus:
         self._redis = redis_
         self._pubsub = self._redis.pubsub()
 
-    async def start_listen(self) -> BaseEvent:
+    async def start_listen(self) -> AsyncGenerator[MessageReceivedEvent, Any]:
         while True:
             try:
                 async for message in self._pubsub.listen():
                     if message["type"] == "message":
                         data = json.loads(message["data"])
-                        return MessageReceivedEvent(**data)
+                        yield MessageReceivedEvent(**data)
             except Exception:
                 logger.exception("Redis pub/sub connection failed, retrying")
                 await asyncio.sleep(3)

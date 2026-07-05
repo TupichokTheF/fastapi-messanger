@@ -31,7 +31,6 @@ class ConnectionManager(AbstractConnectionManager):
 
     async def send_message(self, message: MessageDTO):
         channel = f'chat:{message.chat_id}'
-        await self._message_bus.subscribe(channel)
         await self._message_bus.publish_message(channel, message.as_dict())
 
     async def connect_user(self, chat_ids: list[int], user_id: int, websocket: WebSocket):
@@ -40,6 +39,11 @@ class ConnectionManager(AbstractConnectionManager):
         self._list_of_connections.add_user_to_active_connections(user_id, websocket)
         self._list_of_connections.add_user_to_chats(user_id, chat_ids)
 
+        for chat_id in chat_ids:
+            channel = f'chat:{chat_id}'
+            await self._message_bus.subscribe(channel)
+
     async def disconnect_user(self, user_id: int, websocket: WebSocket):
+        ...
 
 
