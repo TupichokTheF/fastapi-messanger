@@ -1,22 +1,23 @@
+import asyncio
 import logging
-
-from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn, asyncio
+from asyncio.queues import Queue
 from contextlib import asynccontextmanager
 
+import uvicorn
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
+
 from app.core.logging.log_config import Logger
+from app.domain.user.exceptions import DomainError
 from app.infrastructure.adapters.log_handlers import KafkaHandler
-from app.presentation.api.v1.router import api_router
+from app.infrastructure.messaging.kafka import KafkaProducer
 from app.infrastructure.database.postgresql.db import database
 from app.infrastructure.database.redis.conn import RedisCon
 from app.infrastructure.websockets.con_manager import connection_manager
-from app.infrastructure.brockers.kafka.producer import KafkaProducer
-from app.domain.user.exceptions import DomainError
+from app.presentation.api.v1.router import api_router
 
-from sqlalchemy.exc import IntegrityError
-from asyncio.queues import Queue
 
 async def send_logs(queue: Queue, producer: KafkaProducer):
     while True:

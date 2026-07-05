@@ -1,6 +1,6 @@
-from app.domain.message import Message, AbstractMessageRepo
-
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.message import AbstractMessageRepo, Message
 
 
 class MessageRepository(AbstractMessageRepo):
@@ -13,3 +13,6 @@ class MessageRepository(AbstractMessageRepo):
         await self._session.commit()
         await self._session.refresh(message)
         return message.id
+
+    async def get_latest_messages_by_chat_id(self, chat_id: int):
+        query = select(Message).

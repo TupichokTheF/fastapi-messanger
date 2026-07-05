@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 import re
-from bcrypt import hashpw, gensalt
+from dataclasses import dataclass
+
+from bcrypt import gensalt, hashpw
 
 from app.domain.base.value_object import BaseValueObject
 from app.domain.user.exceptions import ValidationError
@@ -28,11 +29,13 @@ class UserPassword(BaseValueObject):
     @classmethod
     def create(cls, raw_password: str):
         if raw_password.upper() == raw_password:
-            raise ValidationError(f'Требуется хотя бы одна буква в нижнем регистре: {raw_password}')
+            raise ValidationError('Требуется хотя бы одна буква в нижнем регистре')
         if raw_password.lower() == raw_password:
-            raise ValidationError(f'Требуется хотя бы одна буква в верхнем регистре: {raw_password}')
+            raise ValidationError('Требуется хотя бы одна буква в верхнем регистре')
         if not any(symbol.isdigit() for symbol in raw_password):
-            raise ValidationError(f'Требуется хотя бы одна цифра: {raw_password}')
+            raise ValidationError('Требуется хотя бы одна цифра')
+        if not len(raw_password) < 6:
+            raise ValidationError('Длинна пароля меньше 6 символов')
 
         hashed_password = hashpw(raw_password.encode("utf-8"), gensalt()).decode("utf-8")
         return cls(hashed_password)

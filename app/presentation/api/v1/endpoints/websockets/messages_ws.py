@@ -15,9 +15,9 @@ messages_ws = APIRouter(
 async def websocket_endpoint(websocket: WebSocket,
                              con_manager: ConManagerDep,
                              message_service: MessageServiceDep,
-                             current_user: AuthorizationWsDep,
-                             chat_id: int = Cookie()):
-    await con_manager.connect(chat_id, current_user.id, websocket)
+                             current_user: AuthorizationWsDep):
+
+    await con_manager.connect(current_user.id, websocket)
     try:
         while True:
             user_data = await websocket.receive_json()

@@ -1,28 +1,30 @@
-from fastapi import Depends, Cookie, Query, HTTPException, status, Body
-from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 
-from app.presentation.api.v1.dependencies import AuthServiceDep, ChatServiceDep
-from app.application.services.exceptions import NotFoundError
-from app.application.dtos import UserDTO, ChatDTO
+from fastapi import Body, Cookie, Depends, HTTPException, Query, status, WebSocket, WebSocketDisconnect
+from fastapi.security import OAuth2PasswordBearer
 
+from app.application.dtos import ChatDTO, UserDTO
+from app.application.services.exceptions import NotFoundError, WrongTokenError
+from app.presentation.api.v1.dependencies.services_deps import AuthServiceDep, ChatServiceDep
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/sign_in")
 
-async def get_current_user_ws(auth_service: AuthServiceDep,
+async def get_current_user_ws(websocket: WebSocket,
+                              auth_service: AuthServiceDep,
                               access_token: str = Query(),
                               refresh_token: str = Cookie()) -> UserDTO | None:
     try:
         return await auth_service.get_active_user(access_token, refresh_token)
-    except Exception as e:
-        raise e
+    except (WrongTokenError, NotFoundError):
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        raise WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
 
 async def get_current_user(auth_service: AuthServiceDep,
                            access_token: str = Depends(oauth2_scheme),
                            refresh_token: str = Cookie()) -> UserDTO | None:
     try:
         return await auth_service.get_active_user(access_token, refresh_token)
-    except:
+    except (WrongTokenError, NotFoundError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect access token",

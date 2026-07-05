@@ -27,11 +27,11 @@ class ConnectionManager:
                 continue
 
     async def _send_message(self, data: dict):
-        users = self._chat_users[int(data["chat_id"])]
-        data_to_send = {"chat_id": int(data["chat_id"]),
-                        "sender": data["sender"],
-                        "message": data["message"],
-                        "created_at": datetime.now().timestamp()}
+        users = self._chat_users[int(data['chat_id'])]
+        data_to_send = {"chat_id": int(data['chat_id']),
+                        "sender": data['sender'],
+                        "message": data['message'],
+                        "created_at": data['created_at']}
         for user in users:
             if user == int(data["sender_id"]):
                 continue
@@ -43,10 +43,7 @@ class ConnectionManager:
         channel = f"chat:{message_data['chat_id']}"
         await self._redis.publish(channel, message=json.dumps(message_data))
 
-    async def test(self, chat_id: int):
-       await self._pubsub.subscribe(f"chat:{chat_id}")
-
-    async def connect(self, chat_id: int, user_id: int, web_socket: WebSocket):
+    async def connect(self, user_id: int, web_socket: WebSocket):
         await web_socket.accept()
         if not chat_id in self._chat_users:
             await self._pubsub.subscribe(f"chat:{chat_id}")
@@ -61,9 +58,6 @@ class ConnectionManager:
             await web_socket.close(code=1000)
         except RuntimeError:
             pass
-
-    def get_ws_by_user(self, user_id: int) -> WebSocket:
-        return self._active_connections[user_id]
 
     def is_online(self, user_id: int):
         return user_id in self._active_connections
