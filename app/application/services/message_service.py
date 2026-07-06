@@ -20,22 +20,22 @@ class MessageService:
         self._chat_repo = chat_repo_
         self._messages_cache = messages_cache_
 
-    async def send_direct_message(self, message_data: dict, current_user: UserDTO) -> MessageDTO:
+    async def send_message(self, message_data: MessageDTO, current_user: UserDTO) -> MessageDTO:
         sender = await self._user_repo.get_user_by_username(current_user.username)
-        receiver = await self._user_repo.get_user_by_username(message_data["receiver"])
-        if not receiver:
-            raise NotFoundError("Invalid username")
+        chat = await self._chat_repo.get_chat_by_id(message_data.chat_id)
+        if not chat:
+            raise NotFoundError("Invalid chat id")
+        chat.check_member(sender.id)
 
-        direct_chat = await self._chat_repo.get_direct_chat_by_members(sender, receiver)
-        message = Message.create(sender, message_data["message"], direct_chat.chat)
+        message = Message.create(sender, message_data.text, chat)
 
         await self._messages_repo.add_message(message)
         async with (self._chat_cache as chat_pipe,
                     self._messages_cache as message_pipe):
-            score = int(direct_chat.chat.created_at.timestamp() * 1000)
-            chat_pipe.update_chat_preview(direct_chat.chat, message)
-            chat_pipe.update_chat_score(sender.id, direct_chat.chat, score)
-            chat_pipe.update_chat_score(receiver.id, direct_chat.chat, score)
+            score = int(message.created_at.timestamp() * 1000)
+            chat_pipe.update_chat_preview(chat, message)
+            for chat_member in chat.members:
+                chat_pipe.update_chat_score(chat_member.user.id, chat, score)
 
             message_pipe.cache_message(message)
 
@@ -45,7 +45,7 @@ class MessageService:
         chat = await self._chat_repo.get_chat_by_id(chat_dto.id)
         user = await self._user_repo.get_user_by_id(user_dto.id)
 
-        chat.check_member(user)
+        chat.check_member(user.id)
 
         latest_messages = await self._messages_cache.get_last_messages_by_chat_id(chat.id)
         if latest_messages:

@@ -71,11 +71,11 @@ class Chat(BaseEntity):
             chat_member = ChatMember.create(member, self)
             self._members.add(chat_member)
 
-    def has_member(self, user: User) -> bool:
-        return any(user == member.user for member in self.members)
+    def has_member(self, user_id: int) -> bool:
+        return any(user_id == member.user.id for member in self.members)
 
-    def check_member(self, user: User) -> bool:
-        if not self.has_member(user):
+    def check_member(self, user_id: int) -> bool:
+        if not self.has_member(user_id):
             raise ChatAccessDenied("User isn't member of the chat")
         return True
 

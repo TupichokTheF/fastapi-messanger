@@ -32,9 +32,10 @@ async def get_current_user(auth_service: AuthServiceDep,
         )
 
 async def get_chat_by_id(chat_service: ChatServiceDep,
+                         current_user: UserDTO = Depends(get_current_user),
                          chat_id: int = Query()) -> ChatDTO:
     try:
-        chat = await chat_service.get_chat_by_id(chat_id)
+        chat = await chat_service.get_chat_by_id(chat_id, current_user)
     except NotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

@@ -30,7 +30,10 @@ async def create_user(user_service: UserServiceDep, user_data: UserSignUp):
 
 
 @auth_router.post(path="/sign_in", response_model=AccessToken)
-async def authenticate_user(auth_service: AuthServiceDep, jwt_service: JWTServiceDep, user_data: UserSignIn, response: Response):
+async def authenticate_user(auth_service: AuthServiceDep,
+                            jwt_service: JWTServiceDep,
+                            user_data: UserSignIn,
+                            response: Response):
     try:
         user = await auth_service.authenticate_user(user_data.username, user_data.password)
     except (NotFoundError, WrongPasswordError):
@@ -56,15 +59,22 @@ async def authenticate_user(auth_service: AuthServiceDep, jwt_service: JWTServic
 
 
 @auth_router.post(path="/refresh", response_model=AccessToken)
-async def check_auth(jwt_service: JWTServiceDep, refresh_token: str = Cookie()):
+async def check_auth(jwt_service: JWTServiceDep, response: Response, refresh_token: str = Cookie()):
     try:
-        new_access_token = await jwt_service.refresh_access_token(refresh_token)
+        new_access_token, new_refresh_token = await jwt_service.refresh_access_token(refresh_token)
     except NotFoundError as exc:
         logger.warning("Failed refresh token")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(exc)
         )
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        samesite="lax",
+        max_age=24 * 60 * 60
+    )
 
     logger.info("Token was refreshed")
     return AccessToken(token=new_access_token, token_type="bearer")

@@ -35,6 +35,7 @@ class ChatService:
             score = int(chat.created_at.timestamp() * 1000)
             pipe.update_list_of_user_chats(chat)
             pipe.update_chat_score(current_user.id, chat, score)
+            pipe.update_chat_score(contact.id, chat, score)
 
         return chat.id
 
@@ -53,10 +54,11 @@ class ChatService:
         user_chats = await self._chat_cache.get_chats_previews(chat_ids)
         return user_chats
 
-    async def get_chat_by_id(self, chat_id: int) -> ChatDTO:
+    async def get_chat_by_id(self, chat_id: int, chat_member: UserDTO) -> ChatDTO:
         chat = await self._chat_repo.get_chat_by_id(chat_id)
         if not chat:
             raise NotFoundError("Chat with that id wasn't found")
+        chat.check_member(chat_member.id)
 
         return ChatDTO.from_entity(chat)
 

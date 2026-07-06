@@ -27,13 +27,17 @@ class JWTService:
 
         return encoded_jwt
 
-    async def refresh_access_token(self, refresh_token: str) -> str:
+    async def refresh_access_token(self, refresh_token: str) -> tuple[str, str]:
         username = await self._token_cache.get_username_by_refresh_token(refresh_token)
         if not username:
             raise NotFoundError("Incorrect refresh_token")
-        access_token = await self.generate_token({"sub": username})
+        self._token_cache.delete_refresh_token(refresh_token)
 
-        return access_token
+        data = {"sub": username}
+        access_token = await self.generate_token(data)
+        new_refresh_token = await self.generate_refresh_token(data)
+
+        return access_token, new_refresh_token
 
     def get_username_by_access_token(self, access_token: str) -> str:
         try:
