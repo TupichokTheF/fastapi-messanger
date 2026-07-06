@@ -34,6 +34,8 @@ class UserPassword(BaseValueObject):
             raise ValidationError('Требуется хотя бы одна буква в верхнем регистре')
         if not any(symbol.isdigit() for symbol in raw_password):
             raise ValidationError('Требуется хотя бы одна цифра')
+        if len(raw_password) < 6:
+            raise ValidationError('Длинна пароля меньше 6 символов')
 
         hashed_password = hashpw(raw_password.encode("utf-8"), gensalt()).decode("utf-8")
         return cls(hashed_password)

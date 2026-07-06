@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Body, Cookie, Depends, HTTPException, Query, status
+from fastapi import Cookie, Depends, HTTPException, Query, status, WebSocket, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordBearer
 
 from app.application.dtos import ChatDTO, UserDTO
@@ -9,13 +9,15 @@ from app.presentation.api.v1.dependencies.services_deps import AuthServiceDep, C
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/sign_in")
 
-async def get_current_user_ws(auth_service: AuthServiceDep,
+async def get_current_user_ws(websocket: WebSocket,
+                              auth_service: AuthServiceDep,
                               access_token: str = Query(),
                               refresh_token: str = Cookie()) -> UserDTO | None:
     try:
         return await auth_service.get_active_user(access_token, refresh_token)
-    except Exception as e:
-        raise e
+    except (WrongTokenError, NotFoundError):
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        raise WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
 
 async def get_current_user(auth_service: AuthServiceDep,
                            access_token: str = Depends(oauth2_scheme),
@@ -30,7 +32,7 @@ async def get_current_user(auth_service: AuthServiceDep,
         )
 
 async def get_chat_by_id(chat_service: ChatServiceDep,
-                         chat_id: int = Body(embed=True)) -> ChatDTO:
+                         chat_id: int = Query()) -> ChatDTO:
     try:
         chat = await chat_service.get_chat_by_id(chat_id)
     except NotFoundError as exc:

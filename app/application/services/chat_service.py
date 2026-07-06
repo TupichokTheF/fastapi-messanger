@@ -38,7 +38,7 @@ class ChatService:
 
         return chat.id
 
-    async def get_user_chats_by_id(self, user: UserDTO) -> list[dict]:
+    async def get_chats_previews_by_user_id(self, user: UserDTO) -> list[dict]:
         chat_ids = await self._chat_cache.get_chat_ids(user.id)
 
         if not chat_ids:
@@ -60,3 +60,7 @@ class ChatService:
 
         return ChatDTO.from_entity(chat)
 
+    async def get_user_chats_by_user_id(self, user_id: int) -> list[ChatDTO]:
+        chats = await self._chat_repo.get_chats_by_user_id(user_id)
+
+        return [ChatDTO.from_entity(chat) for chat in chats]

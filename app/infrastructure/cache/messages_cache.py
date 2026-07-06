@@ -13,14 +13,15 @@ class MessageCachePipe:
     def cache_message(self, message: Message) -> None:
         score = int(message.chat.created_at.timestamp() * 1000)
         message_data = {
-            "message_id": message.id,
-            "sender": message.sender.username,
+            'message_id': message.id,
+            'chat_id': message.chat.id,
+            'sender_id': message.sender.id,
             'created_at': score,
             'text': message.text
         }
         self._pipe.hset(name=f'message:{message.id}', mapping=message_data)
         self._pipe.zadd(name=f'chat:{message.chat.id}:messages', mapping={f'message:{message.id}': score})
-        self._pipe.zremrangebyrank(name=f'chat:{message.chat.id}:messages', min=50, max=-1)
+        self._pipe.zremrangebyrank(name=f'chat:{message.chat.id}:messages', min=0, max=-51)
 
 
 class MessagesCache:
@@ -39,9 +40,10 @@ class MessagesCache:
 
     @staticmethod
     def _convert_to_dto(data: dict) -> MessageDTO:
-        return MessageDTO(id=data['message_id'],
-                          sender=data['sender'],
-                          created_at=data['created_at'],
+        return MessageDTO(message_id=data['message_id'],
+                          chat_id=data['chat_id'],
+                          sender_id=data['sender_id'],
+                          created_at_timestamp_ms=data['created_at'],
                           text=data['text'])
 
     async def __aenter__(self) -> MessageCachePipe:

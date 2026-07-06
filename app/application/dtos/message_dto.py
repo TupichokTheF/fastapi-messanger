@@ -1,19 +1,23 @@
-from dataclasses import dataclass
-from datetime import datetime
-
 from app.domain.message import Message
 
+from dataclasses import dataclass, asdict
+from datetime import datetime
 
 @dataclass(kw_only=True)
 class MessageDTO:
-    id: int
-    sender: str
-    created_at: datetime
+    message_id: int
+    sender_id: int
+    chat_id: int
     text: str
+    created_at_timestamp_ms: int
+
+    def as_dict(self):
+        return asdict(self)
 
     @classmethod
     def from_entity(cls, message_: Message):
-        return cls(id=message_.id,
-                   sender=message_.sender,
-                   created_at=message_.created_at,
-                   text=message_.text)
+        return cls(message_id=message_.id,
+                   sender_id=message_.sender.id,
+                   chat_id=message_.chat.id,
+                   text=message_.text,
+                   created_at_timestamp_ms=int(message_.created_at.timestamp()) * 1000)

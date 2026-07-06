@@ -293,7 +293,7 @@ requires-dist = [
     { name = "rich", specifier = "==14.3.3" },
     { name = "rich-toolkit", specifier = "==0.19.7" },
     { name = "rignore", specifier = "==0.7.6" },
-    { name = "ruff", specifier = ">=0.15.20" },
+    { name = "ruff", specifier = "==0.15.20" },
     { name = "sentry-sdk", specifier = "==2.54.0" },
     { name = "shellingham", specifier = "==1.5.4" },
     { name = "sqlalchemy", specifier = "==2.0.48" },

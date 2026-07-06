@@ -34,7 +34,7 @@ async def add_user_to_contact(current_user: AuthorizationDep, chat_service: Chat
 
 @chat_router.get(path="/get_chats_preview", response_model=UserChatsResponse)
 async def get_chats_preview(current_user: AuthorizationDep, chat_service: ChatServiceDep):
-    chats = await chat_service.get_user_chats_by_id(current_user)
+    chats = await chat_service.get_chats_previews_by_user_id(current_user)
 
     logger.info(f"Send user chat previews | user_id={current_user.id}", extra={"user_id": current_user.id})
     return UserChatsResponse(succeed=True, detail="Send previews of user chats", chats=chats)
