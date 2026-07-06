@@ -20,7 +20,7 @@ class ErrorResponse(BaseResponse):
     pass
 
 class MessageSendResponse(BaseResponse):
-    created_at: datetime.datetime
+    created_at: int
 
 class MessageToSend(BaseModel):
     text: str

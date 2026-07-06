@@ -31,7 +31,7 @@ async def websocket_endpoint(websocket: WebSocket,
             await con_manager.send_message(message)
             await websocket.send_json(MessageSendResponse(succeed=True,
                                                           detail="Message send",
-                                                          created_at=message.created_at).model_dump(mode="json"))
+                                                          created_at=message.created_at_timestamp_ms).model_dump(mode="json"))
     except Exception as e:
         pass
     finally:
