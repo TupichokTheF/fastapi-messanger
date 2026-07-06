@@ -9,7 +9,7 @@ class MessageDTO:
     sender_id: int
     chat_id: int
     text: str
-    created_at: datetime
+    created_at_timestamp_ms: int
 
     def as_dict(self):
         return asdict(self)
@@ -20,4 +20,4 @@ class MessageDTO:
                    sender_id=message_.sender.id,
                    chat_id=message_.chat.id,
                    text=message_.text,
-                   created_at=message_.created_at)
+                   created_at_timestamp_ms=int(message_.created_at.timestamp()) * 1000)

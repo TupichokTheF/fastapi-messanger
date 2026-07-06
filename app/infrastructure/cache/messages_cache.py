@@ -43,7 +43,7 @@ class MessagesCache:
         return MessageDTO(message_id=data['message_id'],
                           chat_id=data['chat_id'],
                           sender_id=data['sender_id'],
-                          created_at=data['created_at'],
+                          created_at_timestamp_ms=data['created_at'],
                           text=data['text'])
 
     async def __aenter__(self) -> MessageCachePipe:

@@ -12,7 +12,7 @@ class ConnectionList:
     def get_websockets_by_chat_id(self, chat_id: int) -> set[WebSocket]:
         receivers_websockets = set()
         for user_of_chat in self._chat_users[chat_id]:
-            receivers_websockets += (self._user_websocket[user_of_chat])
+            receivers_websockets |= (self._user_websocket[user_of_chat])
 
         return receivers_websockets
 

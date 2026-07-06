@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Body, Cookie, Depends, HTTPException, Query, status, WebSocket, WebSocketDisconnect
+from fastapi import Cookie, Depends, HTTPException, Query, status, WebSocket, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordBearer
 
 from app.application.dtos import ChatDTO, UserDTO
@@ -32,7 +32,7 @@ async def get_current_user(auth_service: AuthServiceDep,
         )
 
 async def get_chat_by_id(chat_service: ChatServiceDep,
-                         chat_id: int = Body(embed=True)) -> ChatDTO:
+                         chat_id: int = Query()) -> ChatDTO:
     try:
         chat = await chat_service.get_chat_by_id(chat_id)
     except NotFoundError as exc:

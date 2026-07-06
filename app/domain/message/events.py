@@ -1,7 +1,6 @@
 from app.domain.base import BaseEvent
 
 from dataclasses import dataclass
-from datetime import datetime
 
 
 @dataclass(kw_only=True)
@@ -10,4 +9,4 @@ class MessageSentEvent(BaseEvent):
     chat_id: int
     sender_id: int
     text: str
-    created_at: datetime
+    created_at_timestamp_ms: int

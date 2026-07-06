@@ -36,6 +36,6 @@ class ConnectionManager(AbstractConnectionManager):
             if user_ws in sender_ws:
                 continue
 
-            await user_ws.send_json(json.dumps(message.as_dict()))
+            await user_ws.send_json(message.as_dict())
 
 connection_manager: ConnectionManager = ConnectionManager()
