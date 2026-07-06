@@ -1,7 +1,11 @@
 from abc import ABC
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=True)
 class BaseEvent(ABC):
-    pass
+
+
+    def as_dict(self):
+        return asdict(self)
+

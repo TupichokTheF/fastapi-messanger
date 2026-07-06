@@ -19,11 +19,20 @@ class ConnectionList:
     def get_websocket_by_user_id(self, user_id: int) -> set[WebSocket]:
         return self._user_websocket[user_id]
 
-    def add_user_to_active_connections(self, user_id: int, websocket: WebSocket):
+    def add_user_to_active_connections(self, user_id: int, websocket: WebSocket) -> None:
         self._user_websocket[user_id].add(websocket)
 
-    def add_user_to_chats(self, user_id: int, chat_ids: list[int]):
+    def add_user_to_chats(self, user_id: int, chat_ids: list[int]) -> None:
         for chat_id in chat_ids:
             self._chat_users[chat_id].add(user_id)
+
+    def disconnect_user(self, user_id: int, websocket: WebSocket) -> None:
+        self._user_websocket[user_id].discard(websocket)
+        chats = self._chat_users.values()
+
+        for chat in chats:
+            if user_id in chat:
+                chat.discard(user_id)
+
 
 connection_list = ConnectionList()

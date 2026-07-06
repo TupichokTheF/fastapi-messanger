@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 @dataclass(kw_only=True)
-class MessageReceivedEvent(BaseEvent):
+class MessageSentEvent(BaseEvent):
     message_id: int
     chat_id: int
     sender_id: int

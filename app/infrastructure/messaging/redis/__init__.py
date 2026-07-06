@@ -1,3 +1,3 @@
-from .message_bus import message_bus
+from .message_bus import message_bus, MessageBus
 
-__all__ = ['message_bus']
+__all__ = ['message_bus', 'MessageBus']

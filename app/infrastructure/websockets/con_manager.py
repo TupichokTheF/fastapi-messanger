@@ -1,80 +1,41 @@
 from fastapi import WebSocket
 
-from datetime import datetime
-from collections import defaultdict
+from app.domain.message import MessageSentEvent
+from app.application.dtos import MessageDTO
+from app.application.ports import AbstractConnectionManager
+from app.infrastructure.messaging.redis import message_bus, MessageBus
+from app.infrastructure.websockets import connection_list, ConnectionList
+
 import json
 
-from app.infrastructure.database.redis.conn import RedisCon
 
-
-class ConnectionManager:
+class ConnectionManager(AbstractConnectionManager):
 
     def __init__(self):
-        self._active_connections: dict[int, set[WebSocket]] = defaultdict(set)
-        self._chat_users: dict[int, set[int]] = defaultdict(set)
-        self._redis = RedisCon.get_redis()
-        self._pubsub = self._redis.pubsub()
+        self._list_of_connections: ConnectionList = connection_list
+        self._message_bus: MessageBus = message_bus
 
-    async def init_listening(self):
-        await self._pubsub.subscribe("chat:init_sub")
-        while True:
-            try:
-                async for message in self._pubsub.listen():
-                    if message["type"] == "message":
-                        data = json.loads(message["data"])
-                        await self._send_message(data)
-            except Exception as e:
+    async def send_message(self, message: MessageDTO):
+        event = MessageSentEvent(**message.as_dict())
+        await self._message_bus.publish_event(event)
+
+    async def connect_user(self, chat_ids: list[int], user_id: int, websocket: WebSocket):
+        await websocket.accept()
+
+        self._list_of_connections.add_user_to_active_connections(user_id, websocket)
+        self._list_of_connections.add_user_to_chats(user_id, chat_ids)
+
+        await self._message_bus.subscribe(MessageSentEvent, self._deliver_message)
+
+    async def _deliver_message(self, message: MessageSentEvent):
+        users_websockets = self._list_of_connections.get_websockets_by_chat_id(message.chat_id)
+        sender_ws = self._list_of_connections.get_websocket_by_user_id(message.sender_id)
+
+        for user_ws in users_websockets:
+            if user_ws in sender_ws:
                 continue
 
-    async def _send_message(self, data: dict):
-        users = self._chat_users[int(data['chat_id'])]
-        data_to_send = {"chat_id": int(data['chat_id']),
-                        "sender": data['sender'],
-                        "message": data['message'],
-                        "created_at": data['created_at']}
-        for user in users:
-            if user == int(data["sender_id"]):
-                continue
-            user_ws = self._active_connections[user]
-            for ws in user_ws:
-                await ws.send_json(data_to_send)
+            user_ws.send_json(json.loads(message.as_dict()))
 
-    async def publish_message(self, message_data: dict):
-        channel = f"chat:{message_data['chat_id']}"
-        await self._redis.publish(channel, message=json.dumps(message_data))
-
-    async def connect(self, user_id: int, web_socket: WebSocket):
-        await web_socket.accept()
-        if not chat_id in self._chat_users:
-            await self._pubsub.subscribe(f"chat:{chat_id}")
-        self._chat_users[chat_id].add(user_id)
-        self._active_connections[user_id].add(web_socket)
-
-    async def disconnect(self, user_id: int, web_socket: WebSocket):
-        try:
-            self._active_connections[user_id].discard(web_socket)
-            for chat in self._chat_users.values():
-                chat.discard(user_id)
-            await web_socket.close(code=1000)
-        except RuntimeError:
-            pass
-
-    def is_online(self, user_id: int):
-        return user_id in self._active_connections
-
-    @property
-    def active_connections(self):
-        return self._active_connections
-
-import asyncio
-
-connection_manager = ConnectionManager()
-
-async def main():
-    asyncio.create_task(connection_manager.init_listening())
-    await asyncio.sleep(0.3)
-    await connection_manager.test(3)
-    await connection_manager.publish_message({"chat_id": 3, "user_id": "maxim"})
-
-if __name__ == '__main__':
-    asyncio.run(main())
+    async def disconnect_user(self, user_id: int, websocket: WebSocket):
+        self._list_of_connections.disconnect_user(user_id, websocket)

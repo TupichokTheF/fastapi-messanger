@@ -1,7 +1,7 @@
 from app.infrastructure.cache import ChatCache, MessagesCache
 from app.domain.message import Message
 from app.application.services.exceptions import NotFoundError
-from app.application.dtos import UserDTO, ChatDTO
+from app.application.dtos import UserDTO, ChatDTO, MessageDTO
 from app.domain.chat import AbstractChatRepository
 from app.domain.user import AbstractUserRepository
 from app.domain.message import AbstractMessageRepo
@@ -20,7 +20,7 @@ class MessageService:
         self._chat_repo = chat_repo_
         self._messages_cache = messages_cache_
 
-    async def send_direct_message(self, message_data: dict, current_user: UserDTO):
+    async def send_direct_message(self, message_data: dict, current_user: UserDTO) -> MessageDTO:
         sender = await self._user_repo.get_user_by_username(current_user.username)
         receiver = await self._user_repo.get_user_by_username(message_data["receiver"])
         if not receiver:
@@ -39,7 +39,7 @@ class MessageService:
 
             message_pipe.cache_message(message)
 
-        return message, receiver
+        return MessageDTO.from_entity(message)
 
     async def get_latest_messages_of_chat(self, user_dto: UserDTO, chat_dto: ChatDTO):
         chat = await self._chat_repo.get_chat_by_id(chat_dto.id)
