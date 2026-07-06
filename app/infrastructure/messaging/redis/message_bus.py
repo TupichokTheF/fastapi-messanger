@@ -21,13 +21,13 @@ class MessageBus:
         self._events: dict[str, type[BaseEvent]] = {}
         self._handlers: dict[type[BaseEvent], list[Callable]] = defaultdict(list)
 
-    async def start_listen(self) -> AsyncGenerator[BaseEvent, Any]:
+    async def start_listen(self) -> None:
         while True:
             try:
                 async for message in self._pubsub.listen():
                     if message['type'] == 'message':
                         data = json.loads(message['data'])
-                        event_name = message['channel'].removeprefix('event')
+                        event_name = message['channel'].removeprefix('event:')
                         event_type = self._events[event_name]
                         event = event_type(**data)
 

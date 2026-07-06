@@ -11,11 +11,12 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.logging.log_config import Logger
 from app.domain.user.exceptions import DomainError
+from app.domain.message import MessageSentEvent
 from app.infrastructure.adapters.log_handlers import KafkaHandler
-from app.infrastructure.messaging.kafka import KafkaProducer
+from app.infrastructure.websockets.con_manager import connection_manager
+from app.infrastructure.messaging import KafkaProducer, message_bus
 from app.infrastructure.database.postgresql.db import database
 from app.infrastructure.database.redis.conn import RedisCon
-from app.infrastructure.websockets.con_manager import connection_manager
 from app.presentation.api.v1.router import api_router
 
 
@@ -44,7 +45,8 @@ def setup_kafka_logger(producer: KafkaProducer):
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
-    asyncio.create_task(connection_manager.init_listening())
+    await message_bus.subscribe(MessageSentEvent, connection_manager.deliver_message)
+    asyncio.create_task(message_bus.start_listen())
 
     await database.init_database()
 

@@ -25,9 +25,10 @@ class ConnectionManager(AbstractConnectionManager):
         self._list_of_connections.add_user_to_active_connections(user_id, websocket)
         self._list_of_connections.add_user_to_chats(user_id, chat_ids)
 
-        await self._message_bus.subscribe(MessageSentEvent, self._deliver_message)
+    async def disconnect_user(self, user_id: int, websocket: WebSocket):
+        self._list_of_connections.disconnect_user(user_id, websocket)
 
-    async def _deliver_message(self, message: MessageSentEvent):
+    async def deliver_message(self, message: MessageSentEvent):
         users_websockets = self._list_of_connections.get_websockets_by_chat_id(message.chat_id)
         sender_ws = self._list_of_connections.get_websocket_by_user_id(message.sender_id)
 
@@ -35,7 +36,6 @@ class ConnectionManager(AbstractConnectionManager):
             if user_ws in sender_ws:
                 continue
 
-            user_ws.send_json(json.loads(message.as_dict()))
+            await user_ws.send_json(json.dumps(message.as_dict()))
 
-    async def disconnect_user(self, user_id: int, websocket: WebSocket):
-        self._list_of_connections.disconnect_user(user_id, websocket)
+connection_manager: ConnectionManager = ConnectionManager()
