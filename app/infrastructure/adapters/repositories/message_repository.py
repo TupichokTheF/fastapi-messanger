@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.domain.message import AbstractMessageRepo, Message
+from app.domain.message import Message
 
 
-class MessageRepository(AbstractMessageRepo):
+class MessageRepository:
 
     def __init__(self, session: AsyncSession):
         self._session = session

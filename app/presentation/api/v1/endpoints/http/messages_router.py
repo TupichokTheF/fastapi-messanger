@@ -25,3 +25,5 @@ async def get_latest_messages(current_user: AuthorizationDep, chat: ChatDep, mes
     return ChatLatestMessages(succeed=True,
                               detail="Send the fifty latest messages of chat",
                               messages=latest_messages)
+
+

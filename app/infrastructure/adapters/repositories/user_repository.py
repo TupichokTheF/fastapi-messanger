@@ -1,11 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.user import AbstractUserRepository, User
+from app.domain.user import User
 from app.domain.user.value_objects import UserUsername
 
 
-class UserRepository(AbstractUserRepository):
+class UserRepository:
 
     def __init__(self, session: AsyncSession):
         self._session = session

@@ -2,14 +2,13 @@ from fastapi import WebSocket
 
 from app.domain.message import MessageSentEvent
 from app.application.dtos import MessageDTO
-from app.application.ports import AbstractConnectionManager
 from app.infrastructure.messaging.redis import message_bus, MessageBus
 from app.infrastructure.websockets import connection_list, ConnectionList
 
 import json
 
 
-class ConnectionManager(AbstractConnectionManager):
+class ConnectionManager:
 
     def __init__(self):
         self._list_of_connections: ConnectionList = connection_list

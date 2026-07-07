@@ -5,6 +5,7 @@ from app.presentation.api.v1.endpoints import (
     chat_router,
     messages_ws,
     user_router,
+    messages_router
 )
 
 api_router = APIRouter(
@@ -12,5 +13,6 @@ api_router = APIRouter(
 )
 api_router.include_router(auth_router)
 api_router.include_router(user_router)
+api_router.include_router(messages_router)
 api_router.include_router(messages_ws)
 api_router.include_router(chat_router)
