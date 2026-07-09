@@ -11,3 +11,4 @@ class MessageBase(BaseModel):
 
 class MessageCreate(MessageBase):
     created_at: datetime
+

@@ -3,9 +3,10 @@ from typing import Annotated
 from fastapi import Cookie, Depends, HTTPException, Query, status, WebSocket, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordBearer
 
-from app.application.dtos import ChatDTO, UserDTO
+from app.application.dtos import ChatDTO, UserDTO, FilterParamsDTO
 from app.application.services.exceptions import NotFoundError, WrongTokenError
 from app.presentation.api.v1.dependencies.services_deps import AuthServiceDep, ChatServiceDep
+from app.presentation.api.v1.schemas.common import FilterParams
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/sign_in")
 
@@ -44,6 +45,10 @@ async def get_chat_by_id(chat_service: ChatServiceDep,
 
     return chat
 
+async def get_filter_params(filter_params: FilterParams):
+    return FilterParamsDTO(**filter_params.model_dump())
+
 ChatDep = Annotated[ChatDTO, Depends(get_chat_by_id)]
 AuthorizationDep = Annotated[UserDTO, Depends(get_current_user)]
 AuthorizationWsDep = Annotated[UserDTO, Depends(get_current_user_ws)]
+FilterParamsDep = Annotated[FilterParamsDTO, Depends(get_filter_params)]

@@ -1,7 +1,7 @@
 from app.infrastructure.cache import ChatCache, MessagesCache
 from app.domain.message import Message
 from app.application.services.exceptions import NotFoundError
-from app.application.dtos import UserDTO, ChatDTO, MessageDTO
+from app.application.dtos import UserDTO, ChatDTO, MessageDTO, FilterParamsDTO
 from app.domain.chat import AbstractChatRepository
 from app.domain.user import AbstractUserRepository
 from app.domain.message import AbstractMessageRepo
@@ -41,11 +41,8 @@ class MessageService:
 
         return MessageDTO.from_entity(message)
 
-    async def get_latest_messages_of_chat(self, user_dto: UserDTO, chat_dto: ChatDTO) -> list[MessageDTO]:
+    async def get_latest_messages_of_chat(self, chat_dto: ChatDTO) -> list[MessageDTO]:
         chat = await self._chat_repo.get_chat_by_id(chat_dto.id)
-        user = await self._user_repo.get_user_by_id(user_dto.id)
-
-        chat.check_member(user.id)
 
         latest_messages = await self._messages_cache.get_last_messages_by_chat_id(chat.id)
         if latest_messages:
@@ -60,4 +57,10 @@ class MessageService:
         latest_messages = [MessageDTO.from_entity(message) for message in latest_messages]
 
         return latest_messages
+
+    async def get_messages_from_chat(self, chat: ChatDTO, filter_params: FilterParamsDTO) -> list[MessageDTO]:
+        messages = await self._messages_repo.get_messages_from_chat(chat.id, **filter_params.as_dict())
+
+        return [MessageDTO.from_entity(message) for message in messages]
+
 

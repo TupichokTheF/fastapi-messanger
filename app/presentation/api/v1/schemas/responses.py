@@ -30,6 +30,6 @@ class MessageToSend(BaseModel):
 class UserInfoResponse(BaseResponse):
     info: dict
 
-class ChatLatestMessages(BaseResponse):
+class ChatMessages(BaseResponse):
     messages: list[dict]
 

@@ -3,4 +3,4 @@ from app.presentation.api.v1.dependencies.session_dep import SessionDep, RedisDe
 from app.presentation.api.v1.dependencies.repositories_deps import UserRepositoryDep, MessageRepoDep, ChatRepoDep
 from app.presentation.api.v1.dependencies.cache_deps import TokenCacheDep, ChatCacheDep, MessageCacheDep
 from app.presentation.api.v1.dependencies.services_deps import AuthServiceDep, UserServiceDep, JWTServiceDep, ChatServiceDep, MessageServiceDep
-from app.presentation.api.v1.dependencies.domain_dep import AuthorizationWsDep, AuthorizationDep, ChatDep
+from app.presentation.api.v1.dependencies.domain_dep import AuthorizationWsDep, AuthorizationDep, ChatDep, FilterParamsDep
